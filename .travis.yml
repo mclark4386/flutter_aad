@@ -7,8 +7,8 @@ dart:
 - dev
 
 script:
-  - pub get
-  - pub run test -r expanded
+  - flutter packages get
+  - flutter test -r expanded
   - dartfmt -n --set-exit-if-changed lib/
   - dartanalyzer --fatal-infos --fatal-warnings .
   - pub run test_coverage
