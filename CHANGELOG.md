@@ -1,3 +1,3 @@
-## [0.0.1] - TODO: Add release date.
+## [0.0.1] - 20180910
 
-* TODO: Describe initial release.
+* Getting the base in for what I'm doing now
