@@ -1,8 +1,8 @@
 name: flutter_aad
 description: A Flutter package for interacting with the Azure AD platform.
 version: 0.0.1
-author:
-homepage:
+author: Matthew Clark
+homepage: https://github.com/mclark4386
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"
