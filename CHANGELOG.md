@@ -1,3 +1,7 @@
+## [0.0.3] - 20180910
+
+* testing should be good and getting tokens should be good
+
 ## [0.0.2] - 20180910
 
 * Now has mocking for http tests
