@@ -44,7 +44,25 @@ class FlutterAAD {
   }
 
   Future<String> GetTokenWithAuthCodev1(AADConfig config, String authCode) async {
-    return "";
+    var body = {
+      "grant_type":"authorization_code",
+      "client_id":config.ClientID,
+      "code":authCode,
+      "redirect_uri":config.RedirectURI,
+      "resource":config.Resource,
+    };
+    var response = await http
+        .post(Uri.encodeFull(LOGIN_URI), headers: {"Content-Type": "application/x-www-form-urlencoded"}, body: body);
+    print("GET TOKEN\n");
+    print(response.statusCode);
+    print(response.contentLength);
+    print(response.body);
+    if (response.statusCode >= 200 && response.statusCode < 400){
+      Map<String, dynamic> data = json.decode(response.body);
+      return data["access_token"];
+    }else{
+      // TODO: HANDLE ERROR!!!
+    }
   }
 
   String GetAuthCodeURIv2(AADConfig config) {
@@ -63,7 +81,6 @@ class FlutterAAD {
     return parsed_uri;
   }
   Future<String> GetTokenWithAuthCodev2(AADConfig config, String authCode) async {
-    return "";
     var body = {
       "grant_type":"authorization_code",
       "client_id":config.ClientID,
