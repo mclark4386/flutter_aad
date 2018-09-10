@@ -25,8 +25,6 @@ before_script:
   - git clone https://github.com/flutter/flutter.git -b $FLUTTER_VERSION
   - $TRAVIS_BUILD_DIR/flutter/bin/flutter doctor
 script:
-  - dartfmt -n --set-exit-if-changed lib/
-  - dartanalyzer --fatal-infos --fatal-warnings .
   - $TRAVIS_BUILD_DIR/flutter/bin/flutter test --coverage
 after_success:
   - bash <(curl -s https://codecov.io/bash) -t $CODE_COV_TOKEN
