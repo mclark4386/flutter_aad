@@ -69,11 +69,9 @@ class FlutterAAD {
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: body);
     if (response.statusCode >= 200 && response.statusCode < 400) {
-      print("GET TOKEN\n");
       Map<String, dynamic> data = json.decode(response.body);
       return data["access_token"];
     } else {
-      // TODO: HANDLE ERROR!!!
       if (onError != null) {
         onError(response.body);
       }
@@ -113,12 +111,10 @@ class FlutterAAD {
     };
     var response = await http.post(Uri.encodeFull(V2_LOGIN_URI),
         headers: {"Accept": "application/json;odata=verbose"}, body: body);
-    print("GET TOKEN\n");
     if (response.statusCode >= 200 && response.statusCode < 400) {
       Map<String, dynamic> data = json.decode(response.body);
       return data["access_token"];
     } else {
-      // TODO: HANDLE ERROR!!!
       if (onError != null) {
         onError(response.body);
       }
