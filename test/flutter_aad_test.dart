@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 
 void main() {
   var client = new MockClient((request) async {
-    if (!request.body.contains('client_id=client')) {
+    if ((request.url.path.contains("/token") && !request.body.contains('client_id=client')) || (request.headers.containsKey("Authorization") && request.headers["Authorization"] != "Bearer token")) {
       return http.Response("bad client id", 404);
     }
     return http.Response(json.encode({
@@ -50,4 +50,16 @@ void main() {
       expect(msg, 'bad client id');
     })), "");
   });
+
+  test('get list items', () async {
+    final aad = new FlutterAAD(http: client);
+
+    expect((await aad.GetListItems("https://test.site", "Title", "token"))['access_token'],'good-token-yay');
+    expect((await aad.GetListItems("https://test.site", "Title", "token", select: ["ID","Title","Body","Image","Created","Expires"]))['access_token'],'good-token-yay');
+    expect((await aad.GetListItems("https://test.site", "Title", "token", orderby: "Created%20desc"))['access_token'],'good-token-yay');
+    expect((await aad.GetListItems("https://test.site", "Title", "token", select: ["ID","Title","Body","Image","Created","Expires"], orderby: "Created%20desc", filter: ["(StartTime le '01/01/1971')","(EndTime ge '01/01/1971')"]))['access_token'],'good-token-yay');
+
+    expect((await aad.GetListItems("https://test.site", "Bad Title", "bad_token")), null);
+  });
+//  "?\$select=ID,Title,Body,Image,Created,Expires&\$orderby=Created%20desc"
 }
