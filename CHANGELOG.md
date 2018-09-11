@@ -1,4 +1,4 @@
-## [0.0.4] - 20180911
+## [0.0.5] - 20180911
 
 * little clean up and can now get list items either parsed for you or just the response (so you can send it into built_value directly if you like)
 
