@@ -57,7 +57,7 @@ class FlutterAAD {
   }
 
   Future<String> GetTokenWithAuthCodev1(AADConfig config, String authCode,
-      {void onError(String)}) async {
+      {void onError(String msg)}) async {
     var body = {
       "grant_type": "authorization_code",
       "client_id": config.ClientID,
@@ -101,7 +101,7 @@ class FlutterAAD {
   }
 
   Future<String> GetTokenWithAuthCodev2(AADConfig config, String authCode,
-      {void onError(String)}) async {
+      {void onError(String msg)}) async {
     var body = {
       "grant_type": "authorization_code",
       "client_id": config.ClientID,
@@ -172,5 +172,45 @@ class FlutterAAD {
 //      }
       return null;
     }
+  }
+
+  Future<base_http.Response> GetListItemsResponse(
+      String site, String title, String token,
+      {List<String> select, String orderby, List<String> filter}) async {
+    var url = site;
+    if (!site.endsWith("/")) {
+      url += "/";
+    }
+    url += "_api/web/lists/getbytitle('$title')/items";
+
+    var first = true;
+    if (select != null && select.length > 0) {
+      url += "?\$select=" + select.join(",");
+      first = false;
+    }
+
+    if (filter != null && filter.length > 0) {
+      if (first) {
+        url += "?\$filter=" + filter.join(" and ");
+        first = false;
+      } else {
+        url += "&\$filter=" + filter.join(" and ");
+      }
+    }
+
+    if (orderby != null && orderby.length > 0) {
+      if (first) {
+        url += "?\$orderby=$orderby";
+      } else {
+        url += "&\$orderby=$orderby";
+      }
+    }
+
+    print(url);
+
+    return await http.get(url, headers: {
+      "Accept": "application/json;odata=verbose",
+      "Authorization": "Bearer $token"
+    });
   }
 }

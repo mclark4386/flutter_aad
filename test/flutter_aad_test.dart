@@ -60,6 +60,10 @@ void main() {
     expect((await aad.GetListItems("https://test.site", "Title", "token", select: ["ID","Title","Body","Image","Created","Expires"], orderby: "Created%20desc", filter: ["(StartTime le '01/01/1971')","(EndTime ge '01/01/1971')"]))['access_token'],'good-token-yay');
 
     expect((await aad.GetListItems("https://test.site", "Bad Title", "bad_token")), null);
+
+    expect((await aad.GetListItemsResponse("https://test.site", "Title", "token", select: ["ID","Title","Body","Image","Created","Expires"], orderby: "Created%20desc", filter: ["(StartTime le '01/01/1971')","(EndTime ge '01/01/1971')"])).statusCode,200);
+
+    expect((await aad.GetListItemsResponse("https://test.site", "Bad Title", "bad_token")).statusCode, 404);
   });
 //  "?\$select=ID,Title,Body,Image,Created,Expires&\$orderby=Created%20desc"
 }
