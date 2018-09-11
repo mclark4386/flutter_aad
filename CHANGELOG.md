@@ -1,3 +1,7 @@
+## [0.0.4] - 20180910
+
+* added get list items api call
+
 ## [0.0.3] - 20180910
 
 * testing should be good and getting tokens should be good
