@@ -1,11 +1,6 @@
-# flutter_aad
+# flutter_aad ![coverage badge](https://raw.githubusercontent.com/mclark4386/flutter_aad/master/coverage/badge.svg "Coverage Badge")
 
 A Flutter package for interacting with the Azure AD platform.
 
 **Warning: this project is very much still in development**
 
-## Getting Started
-
-For help getting started with Flutter, view our online [documentation](https://flutter.io/).
-
-For help on editing package code, view the [documentation](https://flutter.io/developing-packages/).
