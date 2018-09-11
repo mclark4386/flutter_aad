@@ -125,45 +125,7 @@ class FlutterAAD {
   Future<Map<String, dynamic>> GetListItems(
       String site, String title, String token,
       {List<String> select, String orderby, List<String> filter}) async {
-    var url = site;
-    if (!site.endsWith("/")) {
-      url += "/";
-    }
-    url += "_api/web/lists/getbytitle('$title')/items";
-
-    var first = true;
-    if (select != null && select.length > 0) {
-      url += "?\$select=" + select.join(",");
-      first = false;
-    }
-
-    if (filter != null && filter.length > 0) {
-      if (first) {
-        url += "?\$filter=" + filter.join(" and ");
-        first = false;
-      } else {
-        url += "&\$filter=" + filter.join(" and ");
-      }
-    }
-
-    if (orderby != null && orderby.length > 0) {
-      if (first) {
-        url += "?\$orderby=$orderby";
-      } else {
-        url += "&\$orderby=$orderby";
-      }
-    }
-
-    print(url);
-
-    var response = await http.get(url, headers: {
-      "Accept": "application/json;odata=verbose",
-      "Authorization": "Bearer $token"
-    });
-    print("LOAD LIST\n");
-    print(response.statusCode);
-    print(response.contentLength);
-    print(response.body);
+    var response = await this.GetListItemsResponse(site, title, token, select: select, orderby: orderby, filter: filter);
     if (response.statusCode >= 200 && response.statusCode < 400) {
       return json.decode(response.body);
     } else {
