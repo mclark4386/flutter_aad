@@ -1,3 +1,7 @@
+## [0.0.8] - 20180912
+
+* Added token refresh call and updates
+
 ## [0.0.7] - 20180912
 
 * added get for full token to use when you need more than the access_token

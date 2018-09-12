@@ -58,6 +58,14 @@ void main() {
       expect(msg, 'bad client id');
     })), "");
   });
+  test('refresh v1 token map request', () async {
+    final aad = new FlutterAAD(http: client);
+    expect((await aad.RefreshTokenMapv1(config, ""))["access_token"], "good-token-yay");
+    expect((await aad.RefreshTokenMapv1(badConfig, "")), null);
+    expect((await aad.RefreshTokenMapv1(badConfig, "",onError: (msg){
+      expect(msg, 'bad client id');
+    })), null);
+  });
 
   test('get list items', () async {
     final aad = new FlutterAAD(http: client);

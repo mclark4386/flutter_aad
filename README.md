@@ -7,3 +7,9 @@ A Dart package for interacting with the Azure AD platform.
 
 **Warning: this project is very much still in development**
 
+
+## Azure Active Directory Docs
+
+- [v1](https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code)
+- [v2](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow)
+

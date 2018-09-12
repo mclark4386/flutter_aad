@@ -28,6 +28,8 @@ const V2_AUTH_URI =
     'https://login.microsoftonline.com/common/oauth2/v2.0/authorize';
 const AUTH_URI = 'https://login.microsoftonline.com/common/oauth2/authorize';
 
+const GRAPH_URI = 'https://graph.microsoft.com/v1.0';
+
 class FlutterAAD {
   base_http.BaseClient http;
 
@@ -79,13 +81,36 @@ class FlutterAAD {
     }
   }
 
-  Future<Map<String, dynamic>> GetTokenMapWithAuthCodev1(AADConfig config, String authCode,
+  Future<Map<String, dynamic>> GetTokenMapWithAuthCodev1(
+      AADConfig config, String authCode,
       {void onError(String msg)}) async {
     var body = {
       "grant_type": "authorization_code",
       "client_id": config.ClientID,
       "code": authCode,
       "redirect_uri": config.RedirectURI,
+      "resource": config.Resource,
+    };
+    var response = await http.post(Uri.encodeFull(LOGIN_URI),
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: body);
+    if (response.statusCode >= 200 && response.statusCode < 400) {
+      return json.decode(response.body);
+    } else {
+      if (onError != null) {
+        onError(response.body);
+      }
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> RefreshTokenMapv1(
+      AADConfig config, String refreshToken,
+      {void onError(String msg)}) async {
+    var body = {
+      "grant_type": "refresh_token",
+      "client_id": config.ClientID,
+      "refresh_token": refreshToken,
       "resource": config.Resource,
     };
     var response = await http.post(Uri.encodeFull(LOGIN_URI),
