@@ -79,6 +79,28 @@ class FlutterAAD {
     }
   }
 
+  Future<Map<String, dynamic>> GetTokenMapWithAuthCodev1(AADConfig config, String authCode,
+      {void onError(String msg)}) async {
+    var body = {
+      "grant_type": "authorization_code",
+      "client_id": config.ClientID,
+      "code": authCode,
+      "redirect_uri": config.RedirectURI,
+      "resource": config.Resource,
+    };
+    var response = await http.post(Uri.encodeFull(LOGIN_URI),
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: body);
+    if (response.statusCode >= 200 && response.statusCode < 400) {
+      return json.decode(response.body);
+    } else {
+      if (onError != null) {
+        onError(response.body);
+      }
+      return null;
+    }
+  }
+
   String GetAuthCodeURIv2(AADConfig config) {
     var uri_base = Uri.parse(AUTH_URI);
 
@@ -125,7 +147,8 @@ class FlutterAAD {
   Future<Map<String, dynamic>> GetListItems(
       String site, String title, String token,
       {List<String> select, String orderby, List<String> filter}) async {
-    var response = await this.GetListItemsResponse(site, title, token, select: select, orderby: orderby, filter: filter);
+    var response = await this.GetListItemsResponse(site, title, token,
+        select: select, orderby: orderby, filter: filter);
     if (response.statusCode >= 200 && response.statusCode < 400) {
       return json.decode(response.body);
     } else {

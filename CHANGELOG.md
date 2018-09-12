@@ -1,3 +1,7 @@
+## [0.0.7] - 20180912
+
+* added get for full token to use when you need more than the access_token
+
 ## [0.0.6] - 20180911
 
 * bit of refactoring
