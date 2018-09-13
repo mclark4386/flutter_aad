@@ -1,3 +1,7 @@
+## [0.0.9] - 20180913
+
+* Added Get My Profile methods
+
 ## [0.0.8] - 20180912
 
 * Added token refresh call and updates

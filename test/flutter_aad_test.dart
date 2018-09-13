@@ -29,11 +29,13 @@ void main() {
     expect(aad.GetAuthCodeURIv1(config), "https://login.microsoftonline.com/common/oauth2/authorize?client_id=client&response_type=code&response_mode=query&resources=thing");
     expect(aad.GetAuthCodeURIv1(configWScope), "https://login.microsoftonline.com/common/oauth2/authorize?client_id=client&response_type=code&response_mode=query&resources=thing&scope=first%20second");
   });
+
   test('generates v2 auth code uris', () async {
     final aad = new FlutterAAD(http: client);
     expect(aad.GetAuthCodeURIv2(config), "https://login.microsoftonline.com/common/oauth2/authorize?client_id=client&response_type=code&response_mode=query");
     expect(aad.GetAuthCodeURIv2(configWScope), "https://login.microsoftonline.com/common/oauth2/authorize?client_id=client&response_type=code&response_mode=query&scope=first%20second");
   });
+
   test('make v1 token request', () async {
     final aad = new FlutterAAD(http: client);
     expect((await aad.GetTokenWithAuthCodev1(config, "")), "good-token-yay");
@@ -42,6 +44,7 @@ void main() {
       expect(msg, 'bad client id');
     })), "");
   });
+
   test('make v1 token map request', () async {
     final aad = new FlutterAAD(http: client);
     expect((await aad.GetTokenMapWithAuthCodev1(config, ""))["access_token"], "good-token-yay");
@@ -50,6 +53,7 @@ void main() {
       expect(msg, 'bad client id');
     })), null);
   });
+
   test('make v2 token request', () async {
     final aad = new FlutterAAD(http: client);
     expect((await aad.GetTokenWithAuthCodev2(configWScope, "")), "good-token-yay");
@@ -58,6 +62,7 @@ void main() {
       expect(msg, 'bad client id');
     })), "");
   });
+
   test('refresh v1 token map request', () async {
     final aad = new FlutterAAD(http: client);
     expect((await aad.RefreshTokenMapv1(config, ""))["access_token"], "good-token-yay");
@@ -81,5 +86,19 @@ void main() {
 
     expect((await aad.GetListItemsResponse("https://test.site", "Bad Title", "bad_token")).statusCode, 404);
   });
-//  "?\$select=ID,Title,Body,Image,Created,Expires&\$orderby=Created%20desc"
+
+  test('get my profile', () async {
+    final aad = new FlutterAAD(http: client);
+
+    expect((await aad.GetMyProfile("token"))['access_token'],'good-token-yay');
+    expect((await aad.GetMyProfile("token", select: ["ID","Title","Body","Image","Created","Expires"]))['access_token'],'good-token-yay');
+    expect((await aad.GetMyProfile("token", orderby: "Created%20desc"))['access_token'],'good-token-yay');
+    expect((await aad.GetMyProfile("token", select: ["ID","Title","Body","Image","Created","Expires"], orderby: "Created%20desc", filter: ["(StartTime le '01/01/1971')","(EndTime ge '01/01/1971')"]))['access_token'],'good-token-yay');
+
+    expect((await aad.GetMyProfile("bad_token")), null);
+
+    expect((await aad.GetMyProfileResponse("token", select: ["ID","Title","Body","Image","Created","Expires"], orderby: "Created%20desc", filter: ["(StartTime le '01/01/1971')","(EndTime ge '01/01/1971')"])).statusCode,200);
+
+    expect((await aad.GetMyProfileResponse("bad_token")).statusCode, 404);
+  });
 }

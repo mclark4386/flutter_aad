@@ -3,6 +3,7 @@ library flutter_aad;
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:meta/meta.dart';
 import 'package:http/http.dart' as base_http;
 
 class AADConfig {
@@ -12,7 +13,10 @@ class AADConfig {
   final String resource;
 
   AADConfig(
-      {this.resource, this.clientID, this.redirectURI, List<String> scope})
+      {this.resource,
+      @required this.clientID,
+      @required this.redirectURI,
+      List<String> scope})
       : this.scope = scope ?? [];
 
   String get ClientID => clientID;
@@ -222,5 +226,29 @@ class FlutterAAD {
       "Accept": "application/json;odata=verbose",
       "Authorization": "Bearer $token"
     });
+  }
+
+  Future<base_http.Response> GetMyProfileResponse(String token,
+      {List<String> select, String orderby, List<String> filter}) async {
+    var url = GRAPH_URI + "/me";
+
+    return await http.get(url, headers: {
+      "Accept": "application/json;odata=verbose",
+      "Authorization": "Bearer $token"
+    });
+  }
+
+  Future<Map<String, dynamic>> GetMyProfile(String token,
+      {List<String> select, String orderby, List<String> filter}) async {
+    var response = await this.GetMyProfileResponse(token,
+        select: select, orderby: orderby, filter: filter);
+    if (response.statusCode >= 200 && response.statusCode < 400) {
+      return json.decode(response.body);
+    } else {
+//      if (onError != null) {
+//        onError(response.body);
+//      }
+      return null;
+    }
   }
 }
