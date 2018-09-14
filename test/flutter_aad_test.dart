@@ -30,11 +30,36 @@ void main() {
     redirectURI: "theplace",
     resource: "thing",
     scope: ["first", "second"],
-    apiVersion: 2,
   );
   var badConfig = AADConfig(
       clientID: "bad_client", redirectURI: "theplace", resource: "thing");
   var badConfigWScope = AADConfig(
+    clientID: "bad_client",
+    redirectURI: "theplace",
+    resource: "thing",
+    scope: ["first", "second"],
+  );
+
+  var configV2 = AADConfig(
+    clientID: "client",
+    redirectURI: "theplace",
+    resource: "thing",
+    apiVersion: 2,
+  );
+  var configWScopeV2 = AADConfig(
+    clientID: "client",
+    redirectURI: "theplace",
+    resource: "thing",
+    scope: ["first", "second"],
+    apiVersion: 2,
+  );
+  var badConfigV2 = AADConfig(
+    clientID: "bad_client",
+    redirectURI: "theplace",
+    resource: "thing",
+    apiVersion: 2,
+  );
+  var badConfigWScopeV2 = AADConfig(
     clientID: "bad_client",
     redirectURI: "theplace",
     resource: "thing",
@@ -44,18 +69,18 @@ void main() {
 
   test('generates v1 auth code uris', () async {
     final aad = new FlutterAAD(http: client);
-    expect(aad.GetAuthCodeURIv1(config),
+    expect(aad.GetAuthCodeURI(config),
         "https://login.microsoftonline.com/common/oauth2/authorize?client_id=client&response_type=code&response_mode=query&resources=thing");
-    expect(aad.GetAuthCodeURIv1(configWScope),
+    expect(aad.GetAuthCodeURI(configWScope),
         "https://login.microsoftonline.com/common/oauth2/authorize?client_id=client&response_type=code&response_mode=query&resources=thing&scope=first%20second");
   });
 
   test('generates v2 auth code uris', () async {
     final aad = new FlutterAAD(http: client);
-    expect(aad.GetAuthCodeURIv2(config),
-        "https://login.microsoftonline.com/common/oauth2/authorize?client_id=client&response_type=code&response_mode=query");
-    expect(aad.GetAuthCodeURIv2(configWScope),
-        "https://login.microsoftonline.com/common/oauth2/authorize?client_id=client&response_type=code&response_mode=query&scope=first%20second");
+    expect(aad.GetAuthCodeURI(configV2),
+        "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=client&response_type=code&response_mode=query");
+    expect(aad.GetAuthCodeURI(configWScopeV2),
+        "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=client&response_type=code&response_mode=query&scope=first%20second");
   });
 
   test('make v1 token request', () async {

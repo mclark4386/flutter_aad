@@ -14,15 +14,20 @@ class FlutterAAD {
 
   /// Generates the OAuth2 v1 URI to be used for a webview to renderer to be able to send
   /// back the authorization code properly.
-  String GetAuthCodeURIv1(AADConfig config) {
+  String GetAuthCodeURI(AADConfig config) {
     var uri_base = Uri.parse(AUTH_URI);
+    if (config.apiVersion != 1) {
+      uri_base = Uri.parse(V2_AUTH_URI);
+    }
 
     var query = {
       "client_id": config.ClientID,
       "response_type": "code",
       "response_mode": "query",
-      "resources": config.Resource,
     };
+    if (config.apiVersion == 1) {
+      query["resources"] = config.Resource;
+    }
 
     var uri = Uri(
         host: uri_base.host,
@@ -99,29 +104,6 @@ class FlutterAAD {
       }
       return null;
     }
-  }
-
-  /// Generates the OAuth2 v2 URI to be used for a webview to renderer to be able to send
-  /// back the authorization code properly.
-  String GetAuthCodeURIv2(AADConfig config) {
-    var uri_base = Uri.parse(AUTH_URI);
-
-    var query = {
-      "client_id": config.ClientID,
-      "response_type": "code",
-      "response_mode": "query",
-    };
-
-    var uri = Uri(
-        host: uri_base.host,
-        scheme: uri_base.scheme,
-        path: uri_base.path,
-        queryParameters: query);
-    var parsed_uri = uri.toString();
-    if (config.scope != null && config.scope.length > 0) {
-      parsed_uri += "&scope=" + config.Scope.join('%20');
-    }
-    return parsed_uri;
   }
 
   /// Call out to OAuth2 v2 get a token given an authentication code or empty
