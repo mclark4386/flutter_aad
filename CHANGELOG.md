@@ -1,3 +1,9 @@
+## [0.0.10] - 20180913
+
+* added example
+* working on docs
+* forgot the v2 variation of GetTokenMapWithAuthCode
+
 ## [0.0.9] - 20180913
 
 * Added Get My Profile methods

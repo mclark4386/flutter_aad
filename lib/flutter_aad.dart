@@ -3,8 +3,8 @@ library flutter_aad;
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:meta/meta.dart';
 import 'package:http/http.dart' as base_http;
+import 'package:meta/meta.dart';
 
 class AADConfig {
   final String clientID;
@@ -35,11 +35,13 @@ const AUTH_URI = 'https://login.microsoftonline.com/common/oauth2/authorize';
 const GRAPH_URI = 'https://graph.microsoft.com/v1.0';
 
 class FlutterAAD {
-  base_http.BaseClient http;
+  final base_http.BaseClient http;
 
   FlutterAAD({base_http.BaseClient http})
       : this.http = http ?? new base_http.Client();
 
+  /// Generates the OAuth2 v1 URI to be used for a webview to renderer to be able to send
+  /// back the authorization code properly.
   String GetAuthCodeURIv1(AADConfig config) {
     var uri_base = Uri.parse(AUTH_URI);
 
@@ -62,6 +64,7 @@ class FlutterAAD {
     return parsed_uri;
   }
 
+  /// Call out to OAuth2 v1 get a token given an authentication code.
   Future<String> GetTokenWithAuthCodev1(AADConfig config, String authCode,
       {void onError(String msg)}) async {
     var body = {
@@ -85,6 +88,8 @@ class FlutterAAD {
     }
   }
 
+  /// Call out to OAuth2 v1 get the full map token back given an authentication
+  /// code.
   Future<Map<String, dynamic>> GetTokenMapWithAuthCodev1(
       AADConfig config, String authCode,
       {void onError(String msg)}) async {
@@ -108,6 +113,7 @@ class FlutterAAD {
     }
   }
 
+  /// Call out to OAuth2 v1 get the full map token back given a refresh token.
   Future<Map<String, dynamic>> RefreshTokenMapv1(
       AADConfig config, String refreshToken,
       {void onError(String msg)}) async {
@@ -130,6 +136,8 @@ class FlutterAAD {
     }
   }
 
+  /// Generates the OAuth2 v2 URI to be used for a webview to renderer to be able to send
+  /// back the authorization code properly.
   String GetAuthCodeURIv2(AADConfig config) {
     var uri_base = Uri.parse(AUTH_URI);
 
@@ -151,6 +159,7 @@ class FlutterAAD {
     return parsed_uri;
   }
 
+  /// Call out to OAuth2 v2 get a token given an authentication code.
   Future<String> GetTokenWithAuthCodev2(AADConfig config, String authCode,
       {void onError(String msg)}) async {
     var body = {
@@ -170,6 +179,30 @@ class FlutterAAD {
         onError(response.body);
       }
       return "";
+    }
+  }
+
+  /// Call out to OAuth2 v2 get the full map token back given an authentication
+  /// code.
+  Future<Map<String, dynamic>> GetTokenMapWithAuthCodev2(
+      AADConfig config, String authCode,
+      {void onError(String msg)}) async {
+    var body = {
+      "grant_type": "authorization_code",
+      "client_id": config.ClientID,
+      "scope": config.Scope.join(' '),
+      "code": authCode,
+      "redirect_uri": config.RedirectURI,
+    };
+    var response = await http.post(Uri.encodeFull(V2_LOGIN_URI),
+        headers: {"Accept": "application/json;odata=verbose"}, body: body);
+    if (response.statusCode >= 200 && response.statusCode < 400) {
+      return json.decode(response.body);
+    } else {
+      if (onError != null) {
+        onError(response.body);
+      }
+      return null;
     }
   }
 
@@ -219,8 +252,6 @@ class FlutterAAD {
         url += "&\$orderby=$orderby";
       }
     }
-
-    print(url);
 
     return await http.get(url, headers: {
       "Accept": "application/json;odata=verbose",
