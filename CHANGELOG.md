@@ -3,6 +3,7 @@
 * added example
 * working on docs
 * forgot the v2 variation of GetTokenMapWithAuthCode
+* added onError callbacks for all the calls that didn't have them before and needed them
 
 ## [0.0.9] - 20180913
 

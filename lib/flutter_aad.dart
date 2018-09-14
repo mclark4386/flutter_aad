@@ -64,7 +64,9 @@ class FlutterAAD {
     return parsed_uri;
   }
 
-  /// Call out to OAuth2 v1 get a token given an authentication code.
+  /// Call out to OAuth2 v1 get a token given an authentication code or empty
+  /// string if the call isn't successful. This will also call the passed
+  /// onError with the body of the error response.
   Future<String> GetTokenWithAuthCodev1(AADConfig config, String authCode,
       {void onError(String msg)}) async {
     var body = {
@@ -89,7 +91,8 @@ class FlutterAAD {
   }
 
   /// Call out to OAuth2 v1 get the full map token back given an authentication
-  /// code.
+  /// code or null if the call isn't successful. This will also call the passed
+  /// onError with the body of the error response.
   Future<Map<String, dynamic>> GetTokenMapWithAuthCodev1(
       AADConfig config, String authCode,
       {void onError(String msg)}) async {
@@ -113,7 +116,9 @@ class FlutterAAD {
     }
   }
 
-  /// Call out to OAuth2 v1 get the full map token back given a refresh token.
+  /// Call out to OAuth2 v1 get the full map token back given a refresh token or
+  /// null if the call isn't successful. This will also call the passed
+  /// onError with the body of the error response.
   Future<Map<String, dynamic>> RefreshTokenMapv1(
       AADConfig config, String refreshToken,
       {void onError(String msg)}) async {
@@ -159,7 +164,9 @@ class FlutterAAD {
     return parsed_uri;
   }
 
-  /// Call out to OAuth2 v2 get a token given an authentication code.
+  /// Call out to OAuth2 v2 get a token given an authentication code or empty
+  /// string if the call isn't successful. This will also call the passed
+  /// onError with the body of the error response.
   Future<String> GetTokenWithAuthCodev2(AADConfig config, String authCode,
       {void onError(String msg)}) async {
     var body = {
@@ -183,7 +190,8 @@ class FlutterAAD {
   }
 
   /// Call out to OAuth2 v2 get the full map token back given an authentication
-  /// code.
+  /// code or null if the call isn't successful. This will also call the passed
+  /// onError with the body of the error response.
   Future<Map<String, dynamic>> GetTokenMapWithAuthCodev2(
       AADConfig config, String authCode,
       {void onError(String msg)}) async {
@@ -206,21 +214,28 @@ class FlutterAAD {
     }
   }
 
+  /// Call out for List items by Title and return null when not successful and
+  /// the Map<String, dynamic> that is returned if successful. This will also
+  /// call the passed onError with the body of the error response.
   Future<Map<String, dynamic>> GetListItems(
       String site, String title, String token,
-      {List<String> select, String orderby, List<String> filter}) async {
+      {List<String> select,
+      String orderby,
+      List<String> filter,
+      void onError(String msg)}) async {
     var response = await this.GetListItemsResponse(site, title, token,
         select: select, orderby: orderby, filter: filter);
     if (response.statusCode >= 200 && response.statusCode < 400) {
       return json.decode(response.body);
     } else {
-//      if (onError != null) {
-//        onError(response.body);
-//      }
+      if (onError != null) {
+        onError(response.body);
+      }
       return null;
     }
   }
 
+  /// Call out for List items by Title and return the response it gets back.
   Future<base_http.Response> GetListItemsResponse(
       String site, String title, String token,
       {List<String> select, String orderby, List<String> filter}) async {
@@ -259,6 +274,9 @@ class FlutterAAD {
     });
   }
 
+  /// Call out for the logged in user's profile and return the response it gets
+  /// back. This will also call the passed onError with the body of the error
+  /// response.
   Future<base_http.Response> GetMyProfileResponse(String token,
       {List<String> select, String orderby, List<String> filter}) async {
     var url = GRAPH_URI + "/me";
@@ -269,16 +287,22 @@ class FlutterAAD {
     });
   }
 
+  /// Call out for the logged in user's profile and return null when not
+  /// successful and the Map<String, dynamic> that is returned if successful.
+  /// This will also call the passed onError with the body of the error response.
   Future<Map<String, dynamic>> GetMyProfile(String token,
-      {List<String> select, String orderby, List<String> filter}) async {
+      {List<String> select,
+      String orderby,
+      List<String> filter,
+      void onError(String msg)}) async {
     var response = await this.GetMyProfileResponse(token,
         select: select, orderby: orderby, filter: filter);
     if (response.statusCode >= 200 && response.statusCode < 400) {
       return json.decode(response.body);
     } else {
-//      if (onError != null) {
-//        onError(response.body);
-//      }
+      if (onError != null) {
+        onError(response.body);
+      }
       return null;
     }
   }

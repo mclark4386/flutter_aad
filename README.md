@@ -13,3 +13,4 @@ A Dart package for interacting with the Azure AD platform.
 - [v1](https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code)
 - [v2](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow)
 
+Docs for this lib are available [here.](https://pub.dartlang.org/documentation/flutter_aad/latest/)
