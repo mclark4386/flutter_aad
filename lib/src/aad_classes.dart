@@ -18,10 +18,7 @@ class AADConfig {
     this.apiVersion = 1,
   }) : this.scope = scope ?? [];
 
-  String get ClientID => clientID;
-  String get RedirectURI => redirectURI;
   List<String> get Scope => List.from(scope);
-  String get Resource => resource;
 }
 
 class AADMap {

@@ -12,7 +12,7 @@ class FlutterAAD {
   FlutterAAD({base_http.BaseClient http})
       : this.http = http ?? new base_http.Client();
 
-  /// Generates the OAuth2 v1 URI to be used for a webview to renderer to be able to send
+  /// Generates the OAuth2 URI to be used for a webview to renderer to be able to send
   /// back the authorization code properly.
   String GetAuthCodeURI(AADConfig config) {
     var uri_base = Uri.parse(AUTH_URI);
@@ -21,12 +21,12 @@ class FlutterAAD {
     }
 
     var query = {
-      "client_id": config.ClientID,
+      "client_id": config.clientID,
       "response_type": "code",
       "response_mode": "query",
     };
     if (config.apiVersion == 1) {
-      query["resources"] = config.Resource;
+      query["resources"] = config.resource;
     }
 
     var uri = Uri(
@@ -41,13 +41,13 @@ class FlutterAAD {
     return parsed_uri;
   }
 
-  /// Call out to OAuth2 v1 get a token given an authentication code or empty
+  /// Call out to OAuth2 and get a token given an authentication code or empty
   /// string if the call isn't successful. This will also call the passed
   /// onError with the body of the error response.
-  Future<String> GetTokenWithAuthCodev1(AADConfig config, String authCode,
+  Future<String> GetTokenWithAuthCode(AADConfig config, String authCode,
       {void onError(String msg)}) async {
-    Map<String, dynamic> data = await this
-        .GetTokenMapWithAuthCodev1(config, authCode, onError: onError);
+    Map<String, dynamic> data =
+        await this.GetTokenMapWithAuthCode(config, authCode, onError: onError);
     if (data != null) {
       return data["access_token"];
     } else {
@@ -55,86 +55,72 @@ class FlutterAAD {
     }
   }
 
-  /// Call out to OAuth2 v1 get the full map token back given an authentication
+  /// Call out to OAuth2 and get the full map token back given an authentication
   /// code or null if the call isn't successful. This will also call the passed
   /// onError with the body of the error response.
-  Future<Map<String, dynamic>> GetTokenMapWithAuthCodev1(
+  Future<Map<String, dynamic>> GetTokenMapWithAuthCode(
       AADConfig config, String authCode,
       {void onError(String msg)}) async {
     var body = {
       "grant_type": "authorization_code",
-      "client_id": config.ClientID,
+      "client_id": config.clientID,
       "code": authCode,
-      "redirect_uri": config.RedirectURI,
-      "resource": config.Resource,
+      "redirect_uri": config.redirectURI,
     };
-    var response = await http.post(Uri.encodeFull(LOGIN_URI),
-        headers: {"Content-Type": "application/x-www-form-urlencoded"},
-        body: body);
-    if (response.statusCode >= 200 && response.statusCode < 400) {
+    switch (config.apiVersion) {
+      case 1:
+        body["resource"] = config.resource;
+        break;
+      case 2:
+        body["scope"] = config.Scope.join(' ');
+        break;
+    }
+    base_http.Response response;
+    if (config.apiVersion == 1) {
+      response = await http.post(Uri.encodeFull(LOGIN_URI),
+          headers: {"Content-Type": "application/x-www-form-urlencoded"},
+          body: body);
+    } else {
+      response = await http.post(Uri.encodeFull(V2_LOGIN_URI),
+          headers: {"Accept": "application/json;odata=verbose"}, body: body);
+    }
+
+    if (response != null &&
+        response.statusCode >= 200 &&
+        response.statusCode < 400) {
       return json.decode(response.body);
     } else {
       if (onError != null) {
-        onError(response.body);
+        onError(response?.body);
       }
       return null;
     }
   }
 
-  /// Call out to OAuth2 v1 get the full map token back given a refresh token or
+  /// Call out to OAuth2 and get the full map token back given a refresh token or
   /// null if the call isn't successful. This will also call the passed
   /// onError with the body of the error response.
-  Future<Map<String, dynamic>> RefreshTokenMapv1(
+  Future<Map<String, dynamic>> RefreshTokenMap(
       AADConfig config, String refreshToken,
       {void onError(String msg)}) async {
     var body = {
       "grant_type": "refresh_token",
-      "client_id": config.ClientID,
+      "client_id": config.clientID,
       "refresh_token": refreshToken,
-      "resource": config.Resource,
     };
-    var response = await http.post(Uri.encodeFull(LOGIN_URI),
+
+    var login_url = LOGIN_URI;
+    if (config.apiVersion == 1) {
+      body["resource"] = config.resource;
+    } else {
+      body["scope"] = config.Scope.join(' ');
+      body["redirect_uri"] = config.redirectURI;
+      login_url = V2_LOGIN_URI;
+    }
+
+    var response = await http.post(Uri.encodeFull(login_url),
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: body);
-    if (response.statusCode >= 200 && response.statusCode < 400) {
-      return json.decode(response.body);
-    } else {
-      if (onError != null) {
-        onError(response.body);
-      }
-      return null;
-    }
-  }
-
-  /// Call out to OAuth2 v2 get a token given an authentication code or empty
-  /// string if the call isn't successful. This will also call the passed
-  /// onError with the body of the error response.
-  Future<String> GetTokenWithAuthCodev2(AADConfig config, String authCode,
-      {void onError(String msg)}) async {
-    Map<String, dynamic> data = await this
-        .GetTokenMapWithAuthCodev2(config, authCode, onError: onError);
-    if (data != null) {
-      return data["access_token"];
-    } else {
-      return "";
-    }
-  }
-
-  /// Call out to OAuth2 v2 get the full map token back given an authentication
-  /// code or null if the call isn't successful. This will also call the passed
-  /// onError with the body of the error response.
-  Future<Map<String, dynamic>> GetTokenMapWithAuthCodev2(
-      AADConfig config, String authCode,
-      {void onError(String msg)}) async {
-    var body = {
-      "grant_type": "authorization_code",
-      "client_id": config.ClientID,
-      "scope": config.Scope.join(' '),
-      "code": authCode,
-      "redirect_uri": config.RedirectURI,
-    };
-    var response = await http.post(Uri.encodeFull(V2_LOGIN_URI),
-        headers: {"Accept": "application/json;odata=verbose"}, body: body);
     if (response.statusCode >= 200 && response.statusCode < 400) {
       return json.decode(response.body);
     } else {
@@ -225,6 +211,8 @@ class FlutterAAD {
     }
 
     // TODO: handle refresh
+    //statusCode:401
+    //body: {"error_description":"Invalid JWT token. The token is expired."}
 
     return AADResponse(await http.get(url, headers: {
       "Accept": "application/json;odata=verbose",

@@ -85,10 +85,10 @@ void main() {
 
   test('make v1 token request', () async {
     final aad = new FlutterAAD(http: client);
-    expect((await aad.GetTokenWithAuthCodev1(config, "")), "good-token-yay");
-    expect((await aad.GetTokenWithAuthCodev1(badConfig, "")), "");
+    expect((await aad.GetTokenWithAuthCode(config, "")), "good-token-yay");
+    expect((await aad.GetTokenWithAuthCode(badConfig, "")), "");
     expect(
-        (await aad.GetTokenWithAuthCodev1(badConfig, "", onError: (msg) {
+        (await aad.GetTokenWithAuthCode(badConfig, "", onError: (msg) {
           expect(msg, 'bad client id');
         })),
         "");
@@ -96,11 +96,11 @@ void main() {
 
   test('make v1 token map request', () async {
     final aad = new FlutterAAD(http: client);
-    expect((await aad.GetTokenMapWithAuthCodev1(config, ""))["access_token"],
+    expect((await aad.GetTokenMapWithAuthCode(config, ""))["access_token"],
         "good-token-yay");
-    expect((await aad.GetTokenMapWithAuthCodev1(badConfig, "")), null);
+    expect((await aad.GetTokenMapWithAuthCode(badConfig, "")), null);
     expect(
-        (await aad.GetTokenMapWithAuthCodev1(badConfig, "", onError: (msg) {
+        (await aad.GetTokenMapWithAuthCode(badConfig, "", onError: (msg) {
           expect(msg, 'bad client id');
         })),
         null);
@@ -109,10 +109,10 @@ void main() {
   test('make v2 token request', () async {
     final aad = new FlutterAAD(http: client);
     expect(
-        (await aad.GetTokenWithAuthCodev2(configWScope, "")), "good-token-yay");
-    expect((await aad.GetTokenWithAuthCodev2(badConfigWScope, "")), "");
+        (await aad.GetTokenWithAuthCode(configWScopeV2, "")), "good-token-yay");
+    expect((await aad.GetTokenWithAuthCode(badConfigWScopeV2, "")), "");
     expect(
-        (await aad.GetTokenWithAuthCodev2(badConfigWScope, "", onError: (msg) {
+        (await aad.GetTokenWithAuthCode(badConfigWScopeV2, "", onError: (msg) {
           expect(msg, 'bad client id');
         })),
         "");
@@ -121,11 +121,11 @@ void main() {
   test('make v2 token map request', () async {
     final aad = new FlutterAAD(http: client);
     expect(
-        (await aad.GetTokenMapWithAuthCodev2(configWScope, ""))["access_token"],
+        (await aad.GetTokenMapWithAuthCode(configWScopeV2, ""))["access_token"],
         "good-token-yay");
-    expect((await aad.GetTokenMapWithAuthCodev2(badConfigWScope, "")), null);
+    expect((await aad.GetTokenMapWithAuthCode(badConfigWScopeV2, "")), null);
     expect(
-        (await aad.GetTokenMapWithAuthCodev2(badConfigWScope, "",
+        (await aad.GetTokenMapWithAuthCode(badConfigWScopeV2, "",
             onError: (msg) {
           expect(msg, 'bad client id');
         })),
@@ -134,11 +134,23 @@ void main() {
 
   test('refresh v1 token map request', () async {
     final aad = new FlutterAAD(http: client);
-    expect((await aad.RefreshTokenMapv1(config, ""))["access_token"],
+    expect((await aad.RefreshTokenMap(config, ""))["access_token"],
         "good-token-yay");
-    expect((await aad.RefreshTokenMapv1(badConfig, "")), null);
+    expect((await aad.RefreshTokenMap(badConfig, "")), null);
     expect(
-        (await aad.RefreshTokenMapv1(badConfig, "", onError: (msg) {
+        (await aad.RefreshTokenMap(badConfig, "", onError: (msg) {
+          expect(msg, 'bad client id');
+        })),
+        null);
+  });
+
+  test('refresh v2 token map request', () async {
+    final aad = new FlutterAAD(http: client);
+    expect((await aad.RefreshTokenMap(configV2, ""))["access_token"],
+        "good-token-yay");
+    expect((await aad.RefreshTokenMap(badConfigV2, "")), null);
+    expect(
+        (await aad.RefreshTokenMap(badConfigV2, "", onError: (msg) {
           expect(msg, 'bad client id');
         })),
         null);
