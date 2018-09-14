@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as base_http;
 
-import 'aad_config.dart';
+import 'aad_classes.dart';
 import 'constants.dart';
 
 class FlutterAAD {
@@ -41,23 +41,11 @@ class FlutterAAD {
   /// onError with the body of the error response.
   Future<String> GetTokenWithAuthCodev1(AADConfig config, String authCode,
       {void onError(String msg)}) async {
-    var body = {
-      "grant_type": "authorization_code",
-      "client_id": config.ClientID,
-      "code": authCode,
-      "redirect_uri": config.RedirectURI,
-      "resource": config.Resource,
-    };
-    var response = await http.post(Uri.encodeFull(LOGIN_URI),
-        headers: {"Content-Type": "application/x-www-form-urlencoded"},
-        body: body);
-    if (response.statusCode >= 200 && response.statusCode < 400) {
-      Map<String, dynamic> data = json.decode(response.body);
+    Map<String, dynamic> data = await this
+        .GetTokenMapWithAuthCodev1(config, authCode, onError: onError);
+    if (data != null) {
       return data["access_token"];
     } else {
-      if (onError != null) {
-        onError(response.body);
-      }
       return "";
     }
   }
@@ -141,22 +129,11 @@ class FlutterAAD {
   /// onError with the body of the error response.
   Future<String> GetTokenWithAuthCodev2(AADConfig config, String authCode,
       {void onError(String msg)}) async {
-    var body = {
-      "grant_type": "authorization_code",
-      "client_id": config.ClientID,
-      "scope": config.Scope.join(' '),
-      "code": authCode,
-      "redirect_uri": config.RedirectURI,
-    };
-    var response = await http.post(Uri.encodeFull(V2_LOGIN_URI),
-        headers: {"Accept": "application/json;odata=verbose"}, body: body);
-    if (response.statusCode >= 200 && response.statusCode < 400) {
-      Map<String, dynamic> data = json.decode(response.body);
+    Map<String, dynamic> data = await this
+        .GetTokenMapWithAuthCodev2(config, authCode, onError: onError);
+    if (data != null) {
       return data["access_token"];
     } else {
-      if (onError != null) {
-        onError(response.body);
-      }
       return "";
     }
   }
@@ -189,13 +166,38 @@ class FlutterAAD {
   /// Call out for List items by Title and return null when not successful and
   /// the Map<String, dynamic> that is returned if successful. This will also
   /// call the passed onError with the body of the error response.
-  Future<Map<String, dynamic>> GetListItems(
+  Future<AADMap> GetListItems(
+      String site, String title, String token, String refresh_token,
+      {List<String> select,
+      String orderby,
+      List<String> filter,
+      void onError(String msg)}) async {
+    var response = await this.GetListItemsResponse(
+        site, title, token, refresh_token,
+        select: select, orderby: orderby, filter: filter);
+    if (response.response.statusCode >= 200 &&
+        response.response.statusCode < 400) {
+      return AADMap(json.decode(response.response.body),
+          response.didRefreshToken, response.full_token);
+    } else {
+      if (onError != null) {
+        onError(response.response.body);
+      }
+      return null;
+    }
+  }
+
+  /// Call out for List items by Title and return null when not successful and
+  /// the Map<String, dynamic> that is returned if successful. This will also
+  /// call the passed onError with the body of the error response.
+  /// DOES NOT TRY TO REFRESH TOKEN FOR YOU!
+  Future<Map<String, dynamic>> GetListItemsWORefresh(
       String site, String title, String token,
       {List<String> select,
       String orderby,
       List<String> filter,
       void onError(String msg)}) async {
-    var response = await this.GetListItemsResponse(site, title, token,
+    var response = await this.GetListItemsResponseWORefresh(site, title, token,
         select: select, orderby: orderby, filter: filter);
     if (response.statusCode >= 200 && response.statusCode < 400) {
       return json.decode(response.body);
@@ -208,7 +210,49 @@ class FlutterAAD {
   }
 
   /// Call out for List items by Title and return the response it gets back.
-  Future<base_http.Response> GetListItemsResponse(
+  Future<AADResponse> GetListItemsResponse(
+      String site, String title, String token, String refresh_token,
+      {List<String> select, String orderby, List<String> filter}) async {
+    var url = site;
+    if (!site.endsWith("/")) {
+      url += "/";
+    }
+    url += "_api/web/lists/getbytitle('$title')/items";
+
+    var first = true;
+    if (select != null && select.length > 0) {
+      url += "?\$select=" + select.join(",");
+      first = false;
+    }
+
+    if (filter != null && filter.length > 0) {
+      if (first) {
+        url += "?\$filter=" + filter.join(" and ");
+        first = false;
+      } else {
+        url += "&\$filter=" + filter.join(" and ");
+      }
+    }
+
+    if (orderby != null && orderby.length > 0) {
+      if (first) {
+        url += "?\$orderby=$orderby";
+      } else {
+        url += "&\$orderby=$orderby";
+      }
+    }
+
+    // TODO: handle refresh
+
+    return AADResponse(await http.get(url, headers: {
+      "Accept": "application/json;odata=verbose",
+      "Authorization": "Bearer $token"
+    }));
+  }
+
+  /// Call out for List items by Title and return the response it gets back.
+  /// DOES NOT TRY TO REFRESH TOKEN FOR YOU!
+  Future<base_http.Response> GetListItemsResponseWORefresh(
       String site, String title, String token,
       {List<String> select, String orderby, List<String> filter}) async {
     var url = site;

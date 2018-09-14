@@ -26,17 +26,21 @@ void main() {
   var config =
       AADConfig(clientID: "client", redirectURI: "theplace", resource: "thing");
   var configWScope = AADConfig(
-      clientID: "client",
-      redirectURI: "theplace",
-      resource: "thing",
-      scope: ["first", "second"]);
+    clientID: "client",
+    redirectURI: "theplace",
+    resource: "thing",
+    scope: ["first", "second"],
+    apiVersion: 2,
+  );
   var badConfig = AADConfig(
       clientID: "bad_client", redirectURI: "theplace", resource: "thing");
   var badConfigWScope = AADConfig(
-      clientID: "bad_client",
-      redirectURI: "theplace",
-      resource: "thing",
-      scope: ["first", "second"]);
+    clientID: "bad_client",
+    redirectURI: "theplace",
+    resource: "thing",
+    scope: ["first", "second"],
+    apiVersion: 2,
+  );
 
   test('generates v1 auth code uris', () async {
     final aad = new FlutterAAD(http: client);
@@ -120,50 +124,55 @@ void main() {
 
     expect(
         (await aad.GetListItems(
-            "https://test.site", "Title", "token"))['access_token'],
+                "https://test.site", "Title", "token", "refresh_token"))
+            .map['access_token'],
         'good-token-yay');
     expect(
-        (await aad.GetListItems("https://test.site", "Title", "token", select: [
-          "ID",
-          "Title",
-          "Body",
-          "Image",
-          "Created",
-          "Expires"
-        ]))['access_token'],
+        (await aad.GetListItems(
+                "https://test.site", "Title", "token", "refresh_token",
+                select: ["ID", "Title", "Body", "Image", "Created", "Expires"]))
+            .map['access_token'],
         'good-token-yay');
     expect(
-        (await aad.GetListItems("https://test.site", "Title", "token",
-            orderby: "Created%20desc"))['access_token'],
+        (await aad.GetListItems(
+                "https://test.site", "Title", "token", "refresh_token",
+                orderby: "Created%20desc"))
+            .map['access_token'],
         'good-token-yay');
     expect(
-        (await aad.GetListItems("https://test.site", "Title", "token",
-            select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
-            orderby: "Created%20desc",
-            filter: [
-              "(StartTime le '01/01/1971')",
-              "(EndTime ge '01/01/1971')"
-            ]))['access_token'],
-        'good-token-yay');
-
-    expect(
-        (await aad.GetListItems("https://test.site", "Bad Title", "bad_token")),
-        null);
-
-    expect(
-        (await aad.GetListItemsResponse("https://test.site", "Title", "token",
+        (await aad.GetListItems(
+                "https://test.site", "Title", "token", "refresh_token",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
                 orderby: "Created%20desc",
                 filter: [
                   "(StartTime le '01/01/1971')",
                   "(EndTime ge '01/01/1971')"
                 ]))
+            .map['access_token'],
+        'good-token-yay');
+
+    expect(
+        (await aad.GetListItems(
+            "https://test.site", "Bad Title", "bad_token", "refresh_token")),
+        null);
+
+    expect(
+        (await aad.GetListItemsResponse(
+                "https://test.site", "Title", "token", "refresh_token",
+                select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
+                orderby: "Created%20desc",
+                filter: [
+                  "(StartTime le '01/01/1971')",
+                  "(EndTime ge '01/01/1971')"
+                ]))
+            .response
             .statusCode,
         200);
 
     expect(
         (await aad.GetListItemsResponse(
-                "https://test.site", "Bad Title", "bad_token"))
+                "https://test.site", "Bad Title", "bad_token", "refresh_token"))
+            .response
             .statusCode,
         404);
   });
