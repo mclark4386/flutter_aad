@@ -161,24 +161,24 @@ void main() {
 
     expect(
         (await aad.GetListItems(
-                "https://test.site", "Title", "token", "refresh_token"))
+                config, "https://test.site", "Title", "token", "refresh_token"))
             .map['access_token'],
         'good-token-yay');
     expect(
         (await aad.GetListItems(
-                "https://test.site", "Title", "token", "refresh_token",
+                config, "https://test.site", "Title", "token", "refresh_token",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"]))
             .map['access_token'],
         'good-token-yay');
     expect(
         (await aad.GetListItems(
-                "https://test.site", "Title", "token", "refresh_token",
+                config, "https://test.site", "Title", "token", "refresh_token",
                 orderby: "Created%20desc"))
             .map['access_token'],
         'good-token-yay');
     expect(
         (await aad.GetListItems(
-                "https://test.site", "Title", "token", "refresh_token",
+                config, "https://test.site", "Title", "token", "refresh_token",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
                 orderby: "Created%20desc",
                 filter: [
@@ -189,13 +189,13 @@ void main() {
         'good-token-yay');
 
     expect(
-        (await aad.GetListItems(
-            "https://test.site", "Bad Title", "bad_token", "refresh_token")),
+        (await aad.GetListItems(config, "https://test.site", "Bad Title",
+            "bad_token", "refresh_token")),
         null);
 
     expect(
         (await aad.GetListItemsResponse(
-                "https://test.site", "Title", "token", "refresh_token",
+                config, "https://test.site", "Title", "token", "refresh_token",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
                 orderby: "Created%20desc",
                 filter: [
@@ -207,8 +207,8 @@ void main() {
         200);
 
     expect(
-        (await aad.GetListItemsResponse(
-                "https://test.site", "Bad Title", "bad_token", "refresh_token"))
+        (await aad.GetListItemsResponse(config, "https://test.site",
+                "Bad Title", "bad_token", "refresh_token"))
             .response
             .statusCode,
         404);

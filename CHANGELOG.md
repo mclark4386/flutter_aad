@@ -1,3 +1,11 @@
+## [0.1.0] - 20180913
+
+* broke a LOT of function signatures... was needed for the auth-refresh
+* added apiVersion to AADConfig to keep the interface consistant
+* merged all v1 and v2 calls to take advantage of the new apiVersion in the config
+* now default to trying to refresh our token if need up to config.refreshTries times
+* moved non-token-refreshing versions out and renamed them as auto-refreshing should now be the default
+
 ## [0.0.10] - 20180913
 
 * added example

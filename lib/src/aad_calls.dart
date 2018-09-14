@@ -134,14 +134,14 @@ class FlutterAAD {
   /// Call out for List items by Title and return null when not successful and
   /// the Map<String, dynamic> that is returned if successful. This will also
   /// call the passed onError with the body of the error response.
-  Future<AADMap> GetListItems(
-      String site, String title, String token, String refresh_token,
+  Future<AADMap> GetListItems(AADConfig config, String site, String title,
+      String token, String refresh_token,
       {List<String> select,
       String orderby,
       List<String> filter,
       void onError(String msg)}) async {
     var response = await this.GetListItemsResponse(
-        site, title, token, refresh_token,
+        config, site, title, token, refresh_token,
         select: select, orderby: orderby, filter: filter);
     if (response.response.statusCode >= 200 &&
         response.response.statusCode < 400) {
@@ -170,17 +170,17 @@ class FlutterAAD {
     if (response.statusCode >= 200 && response.statusCode < 400) {
       return json.decode(response.body);
     } else {
-      if (onError != null) {
-        onError(response.body);
-      }
       return null;
     }
   }
 
   /// Call out for List items by Title and return the response it gets back.
-  Future<AADResponse> GetListItemsResponse(
-      String site, String title, String token, String refresh_token,
-      {List<String> select, String orderby, List<String> filter}) async {
+  Future<AADResponse> GetListItemsResponse(AADConfig config, String site,
+      String title, String token, String refresh_token,
+      {List<String> select,
+      String orderby,
+      List<String> filter,
+      void onError(String msg)}) async {
     var url = site;
     if (!site.endsWith("/")) {
       url += "/";
@@ -210,14 +210,41 @@ class FlutterAAD {
       }
     }
 
-    // TODO: handle refresh
-    //statusCode:401
-    //body: {"error_description":"Invalid JWT token. The token is expired."}
-
-    return AADResponse(await http.get(url, headers: {
+    var response = await http.get(url, headers: {
       "Accept": "application/json;odata=verbose",
       "Authorization": "Bearer $token"
-    }));
+    });
+
+    // handle refresh
+    Map<String, dynamic> full_token;
+    if (response.statusCode == 401 && refresh_token != "") {
+      //statusCode:401
+      //body: {"error_description":"Invalid JWT token. The token is expired."}
+      for (var i; i < config.refreshTries; i++) {
+        full_token = await this.RefreshTokenMap(config, refresh_token);
+        if (full_token != null) {
+          var new_token = full_token["access_token"];
+          var sub_resp = await GetListItemsResponseWORefresh(
+              site, title, new_token,
+              select: select, orderby: orderby, filter: filter);
+          if (sub_resp.statusCode >= 200 && sub_resp.statusCode < 400) {
+            return AADResponse(sub_resp, true, full_token);
+          }
+        }
+      }
+      print(
+          "Failed to properly refresh token! Calling onError with original response body.");
+    }
+    if (response.statusCode < 200 ||
+        response.statusCode == 400 ||
+        response.statusCode > 401 ||
+        (response.statusCode == 401 && full_token == null)) {
+      if (onError != null) {
+        onError(response.body);
+      }
+    }
+
+    return AADResponse(response);
   }
 
   /// Call out for List items by Title and return the response it gets back.
