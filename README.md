@@ -1,9 +1,8 @@
 # flutter_aad
   
-[![Build Status](https://travis-ci.org/mclark4386/flutter_aad.svg?branch=master)](https://travis-ci.org/mclark4386/flutter_aad)
-[![codecov](https://codecov.io/gh/mclark4386/flutter_aad/branch/master/graph/badge.svg)](https://codecov.io/gh/mclark4386/flutter_aad)
+[![Pub](https://img.shields.io/pub/v/flutter_aad.svg)](https://pub.dartlang.org/packages/flutter_aad) [![Build Status](https://travis-ci.org/mclark4386/flutter_aad.svg?branch=master)](https://travis-ci.org/mclark4386/flutter_aad) [![codecov](https://codecov.io/gh/mclark4386/flutter_aad/branch/master/graph/badge.svg)](https://codecov.io/gh/mclark4386/flutter_aad)
 
-A Dart package for interacting with the Azure AD platform.
+A Dart package for interacting with the Azure Active Directiory platform (v1 and v2).
 
 **Warning: this project is very much still in development**
 

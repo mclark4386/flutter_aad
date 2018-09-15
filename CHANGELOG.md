@@ -1,3 +1,7 @@
+## [0.1.4] - 20180915
+
+* Improving descriptions
+
 ## [0.1.3] - 20180915
 
 * fixed example to match new code pattern
