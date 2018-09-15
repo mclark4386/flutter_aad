@@ -11,3 +11,4 @@ ios/Runner/GeneratedPluginRegistrant.*
 
 .idea/
 test/.test_coverage.dart
+.run.sh

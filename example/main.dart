@@ -19,7 +19,7 @@ void main() async {
 
   var aad = FlutterAAD();
 
-  final auth_code_uri = await aad.GetAuthCodeURIv1(aadConfig);
+  final auth_code_uri = await aad.GetAuthCodeURI(aadConfig);
   print(
       "Please use a browsers to access the following url and then copy and paste the uri it redirected you to here:" +
           auth_code_uri);
@@ -34,7 +34,7 @@ void main() async {
 
   final authCode = redirected_uri.queryParameters["code"];
 
-  var full_token = await aad.GetTokenMapWithAuthCodev1(aadConfig, authCode);
+  var full_token = await aad.GetTokenMapWithAuthCode(aadConfig, authCode);
 
   if (full_token == null) {
     print("ERROR GETTING TOKEN!!!");
@@ -50,8 +50,8 @@ void main() async {
   print("here is the profile:");
   print(encoder.convert(profile));
 
-  var lists = await aad.GetListItems(
-      aadConfig.Resource, "Documents", full_token["access_token"]);
+  var lists = await aad.GetListItems(aadConfig,
+      aadConfig.resource, "Documents", full_token["access_token"], full_token["refresh_token"]);
   print("Here is our lists:");
-  print(encoder.convert(lists));
+  print(encoder.convert(lists.map));
 }
