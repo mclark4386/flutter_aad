@@ -1,3 +1,7 @@
+## [0.1.2] - 20180915
+
+* small bug _really_ fixed
+
 ## [0.1.1] - 20180915
 
 * small bug fix
