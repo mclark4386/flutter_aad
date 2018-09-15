@@ -1,3 +1,7 @@
+## [0.1.3] - 20180915
+
+* fixed example to match new code pattern
+
 ## [0.1.2] - 20180915
 
 * small bug _really_ fixed
