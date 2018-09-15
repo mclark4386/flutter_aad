@@ -1,4 +1,8 @@
-## [0.1.0] - 20180913
+## [0.1.1] - 20180915
+
+* small bug fix
+
+## [0.1.0] - 20180914
 
 * broke a LOT of function signatures... was needed for the auth-refresh
 * added apiVersion to AADConfig to keep the interface consistant
