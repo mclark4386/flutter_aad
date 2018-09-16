@@ -9,12 +9,15 @@ import 'constants.dart';
 class FlutterAAD {
   final base_http.BaseClient http;
 
-  FlutterAAD({base_http.BaseClient http})
+  final AADConfig _config;
+  AADConfig get config => _config;
+
+  FlutterAAD(this._config, {base_http.BaseClient http})
       : this.http = http ?? new base_http.Client();
 
   /// Generates the OAuth2 URI to be used for a webview to renderer to be able to send
   /// back the authorization code properly.
-  String GetAuthCodeURI(AADConfig config) {
+  String GetAuthCodeURI() {
     var uri_base = Uri.parse(AUTH_URI);
     if (config.apiVersion != 1) {
       uri_base = Uri.parse(V2_AUTH_URI);
@@ -44,10 +47,10 @@ class FlutterAAD {
   /// Call out to OAuth2 and get a token given an authentication code or empty
   /// string if the call isn't successful. This will also call the passed
   /// onError with the body of the error response.
-  Future<String> GetTokenWithAuthCode(AADConfig config, String authCode,
+  Future<String> GetTokenWithAuthCode(String authCode,
       {void onError(String msg)}) async {
     Map<String, dynamic> data =
-        await this.GetTokenMapWithAuthCode(config, authCode, onError: onError);
+        await this.GetTokenMapWithAuthCode(authCode, onError: onError);
     if (data != null) {
       return data["access_token"];
     } else {
@@ -58,8 +61,7 @@ class FlutterAAD {
   /// Call out to OAuth2 and get the full map token back given an authentication
   /// code or null if the call isn't successful. This will also call the passed
   /// onError with the body of the error response.
-  Future<Map<String, dynamic>> GetTokenMapWithAuthCode(
-      AADConfig config, String authCode,
+  Future<Map<String, dynamic>> GetTokenMapWithAuthCode(String authCode,
       {void onError(String msg)}) async {
     var body = {
       "grant_type": "authorization_code",
@@ -100,8 +102,7 @@ class FlutterAAD {
   /// Call out to OAuth2 and get the full map token back given a refresh token or
   /// null if the call isn't successful. This will also call the passed
   /// onError with the body of the error response.
-  Future<Map<String, dynamic>> RefreshTokenMap(
-      AADConfig config, String refreshToken,
+  Future<Map<String, dynamic>> RefreshTokenMap(String refreshToken,
       {void onError(String msg)}) async {
     var body = {
       "grant_type": "refresh_token",
@@ -134,14 +135,14 @@ class FlutterAAD {
   /// Call out for List items by Title and return null when not successful and
   /// the Map<String, dynamic> that is returned if successful. This will also
   /// call the passed onError with the body of the error response.
-  Future<AADMap> GetListItems(AADConfig config, String site, String title,
-      String token, String refresh_token,
+  Future<AADMap> GetListItems(
+      String site, String title, String token, String refresh_token,
       {List<String> select,
       String orderby,
       List<String> filter,
       void onError(String msg)}) async {
     var response = await this.GetListItemsResponse(
-        config, site, title, token, refresh_token,
+        site, title, token, refresh_token,
         select: select, orderby: orderby, filter: filter);
     if (response.response.statusCode >= 200 &&
         response.response.statusCode < 400) {
@@ -175,8 +176,8 @@ class FlutterAAD {
   }
 
   /// Call out for List items by Title and return the response it gets back.
-  Future<AADResponse> GetListItemsResponse(AADConfig config, String site,
-      String title, String token, String refresh_token,
+  Future<AADResponse> GetListItemsResponse(
+      String site, String title, String token, String refresh_token,
       {List<String> select,
       String orderby,
       List<String> filter,
@@ -221,7 +222,7 @@ class FlutterAAD {
       //statusCode:401
       //body: {"error_description":"Invalid JWT token. The token is expired."}
       for (int i = 0; i < config.refreshTries; i++) {
-        full_token = await this.RefreshTokenMap(config, refresh_token);
+        full_token = await this.RefreshTokenMap(refresh_token);
         if (full_token != null) {
           var new_token = full_token["access_token"];
           var sub_resp = await GetListItemsResponseWORefresh(

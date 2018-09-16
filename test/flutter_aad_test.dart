@@ -33,12 +33,12 @@ void main() {
   );
   var badConfig = AADConfig(
       clientID: "bad_client", redirectURI: "theplace", resource: "thing");
-  var badConfigWScope = AADConfig(
-    clientID: "bad_client",
-    redirectURI: "theplace",
-    resource: "thing",
-    scope: ["first", "second"],
-  );
+//  var badConfigWScope = AADConfig(
+//    clientID: "bad_client",
+//    redirectURI: "theplace",
+//    resource: "thing",
+//    scope: ["first", "second"],
+//  );
 
   var configV2 = AADConfig(
     clientID: "client",
@@ -68,117 +68,120 @@ void main() {
   );
 
   test('generates v1 auth code uris', () async {
-    final aad = new FlutterAAD(http: client);
-    expect(aad.GetAuthCodeURI(config),
+    final aad = new FlutterAAD(config, http: client);
+    final aadWScope = new FlutterAAD(configWScope, http: client);
+    expect(aad.GetAuthCodeURI(),
         "https://login.microsoftonline.com/common/oauth2/authorize?client_id=client&response_type=code&response_mode=query&resources=thing");
-    expect(aad.GetAuthCodeURI(configWScope),
+    expect(aadWScope.GetAuthCodeURI(),
         "https://login.microsoftonline.com/common/oauth2/authorize?client_id=client&response_type=code&response_mode=query&resources=thing&scope=first%20second");
   });
 
   test('generates v2 auth code uris', () async {
-    final aad = new FlutterAAD(http: client);
-    expect(aad.GetAuthCodeURI(configV2),
+    final aad = new FlutterAAD(configV2, http: client);
+    final aadWScope = new FlutterAAD(configWScopeV2, http: client);
+    expect(aad.GetAuthCodeURI(),
         "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=client&response_type=code&response_mode=query");
-    expect(aad.GetAuthCodeURI(configWScopeV2),
+    expect(aadWScope.GetAuthCodeURI(),
         "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=client&response_type=code&response_mode=query&scope=first%20second");
   });
 
   test('make v1 token request', () async {
-    final aad = new FlutterAAD(http: client);
-    expect((await aad.GetTokenWithAuthCode(config, "")), "good-token-yay");
-    expect((await aad.GetTokenWithAuthCode(badConfig, "")), "");
+    final aad = new FlutterAAD(config, http: client);
+    final aadBad = new FlutterAAD(badConfig, http: client);
+    expect((await aad.GetTokenWithAuthCode("")), "good-token-yay");
+    expect((await aadBad.GetTokenWithAuthCode("")), "");
     expect(
-        (await aad.GetTokenWithAuthCode(badConfig, "", onError: (msg) {
+        (await aadBad.GetTokenWithAuthCode("", onError: (msg) {
           expect(msg, 'bad client id');
         })),
         "");
   });
 
   test('make v1 token map request', () async {
-    final aad = new FlutterAAD(http: client);
-    expect((await aad.GetTokenMapWithAuthCode(config, ""))["access_token"],
+    final aad = new FlutterAAD(config, http: client);
+    final aadBad = new FlutterAAD(badConfig, http: client);
+    expect((await aad.GetTokenMapWithAuthCode(""))["access_token"],
         "good-token-yay");
-    expect((await aad.GetTokenMapWithAuthCode(badConfig, "")), null);
+    expect((await aadBad.GetTokenMapWithAuthCode("")), null);
     expect(
-        (await aad.GetTokenMapWithAuthCode(badConfig, "", onError: (msg) {
+        (await aadBad.GetTokenMapWithAuthCode("", onError: (msg) {
           expect(msg, 'bad client id');
         })),
         null);
   });
 
   test('make v2 token request', () async {
-    final aad = new FlutterAAD(http: client);
+    final aad = new FlutterAAD(configWScopeV2, http: client);
+    final aadBad = new FlutterAAD(badConfigWScopeV2, http: client);
+    expect((await aad.GetTokenWithAuthCode("")), "good-token-yay");
+    expect((await aadBad.GetTokenWithAuthCode("")), "");
     expect(
-        (await aad.GetTokenWithAuthCode(configWScopeV2, "")), "good-token-yay");
-    expect((await aad.GetTokenWithAuthCode(badConfigWScopeV2, "")), "");
-    expect(
-        (await aad.GetTokenWithAuthCode(badConfigWScopeV2, "", onError: (msg) {
+        (await aadBad.GetTokenWithAuthCode("", onError: (msg) {
           expect(msg, 'bad client id');
         })),
         "");
   });
 
   test('make v2 token map request', () async {
-    final aad = new FlutterAAD(http: client);
-    expect(
-        (await aad.GetTokenMapWithAuthCode(configWScopeV2, ""))["access_token"],
+    final aad = new FlutterAAD(configWScopeV2, http: client);
+    final aadBad = new FlutterAAD(badConfigWScopeV2, http: client);
+    expect((await aad.GetTokenMapWithAuthCode(""))["access_token"],
         "good-token-yay");
-    expect((await aad.GetTokenMapWithAuthCode(badConfigWScopeV2, "")), null);
+    expect((await aadBad.GetTokenMapWithAuthCode("")), null);
     expect(
-        (await aad.GetTokenMapWithAuthCode(badConfigWScopeV2, "",
-            onError: (msg) {
+        (await aadBad.GetTokenMapWithAuthCode("", onError: (msg) {
           expect(msg, 'bad client id');
         })),
         null);
   });
 
   test('refresh v1 token map request', () async {
-    final aad = new FlutterAAD(http: client);
-    expect((await aad.RefreshTokenMap(config, ""))["access_token"],
-        "good-token-yay");
-    expect((await aad.RefreshTokenMap(badConfig, "")), null);
+    final aad = new FlutterAAD(config, http: client);
+    final aadBad = new FlutterAAD(badConfig, http: client);
+    expect((await aad.RefreshTokenMap(""))["access_token"], "good-token-yay");
+    expect((await aadBad.RefreshTokenMap("")), null);
     expect(
-        (await aad.RefreshTokenMap(badConfig, "", onError: (msg) {
+        (await aadBad.RefreshTokenMap("", onError: (msg) {
           expect(msg, 'bad client id');
         })),
         null);
   });
 
   test('refresh v2 token map request', () async {
-    final aad = new FlutterAAD(http: client);
-    expect((await aad.RefreshTokenMap(configV2, ""))["access_token"],
-        "good-token-yay");
-    expect((await aad.RefreshTokenMap(badConfigV2, "")), null);
+    final aad = new FlutterAAD(configV2, http: client);
+    final aadBad = new FlutterAAD(badConfigV2, http: client);
+    expect((await aad.RefreshTokenMap(""))["access_token"], "good-token-yay");
+    expect((await aadBad.RefreshTokenMap("")), null);
     expect(
-        (await aad.RefreshTokenMap(badConfigV2, "", onError: (msg) {
+        (await aadBad.RefreshTokenMap("", onError: (msg) {
           expect(msg, 'bad client id');
         })),
         null);
   });
 
   test('get list items', () async {
-    final aad = new FlutterAAD(http: client);
+    final aad = new FlutterAAD(config, http: client);
 
     expect(
         (await aad.GetListItems(
-                config, "https://test.site", "Title", "token", "refresh_token"))
+                "https://test.site", "Title", "token", "refresh_token"))
             .map['access_token'],
         'good-token-yay');
     expect(
         (await aad.GetListItems(
-                config, "https://test.site", "Title", "token", "refresh_token",
+                "https://test.site", "Title", "token", "refresh_token",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"]))
             .map['access_token'],
         'good-token-yay');
     expect(
         (await aad.GetListItems(
-                config, "https://test.site", "Title", "token", "refresh_token",
+                "https://test.site", "Title", "token", "refresh_token",
                 orderby: "Created%20desc"))
             .map['access_token'],
         'good-token-yay');
     expect(
         (await aad.GetListItems(
-                config, "https://test.site", "Title", "token", "refresh_token",
+                "https://test.site", "Title", "token", "refresh_token",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
                 orderby: "Created%20desc",
                 filter: [
@@ -189,13 +192,13 @@ void main() {
         'good-token-yay');
 
     expect(
-        (await aad.GetListItems(config, "https://test.site", "Bad Title",
-            "bad_token", "refresh_token")),
+        (await aad.GetListItems(
+            "https://test.site", "Bad Title", "bad_token", "refresh_token")),
         null);
 
     expect(
         (await aad.GetListItemsResponse(
-                config, "https://test.site", "Title", "token", "refresh_token",
+                "https://test.site", "Title", "token", "refresh_token",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
                 orderby: "Created%20desc",
                 filter: [
@@ -207,15 +210,15 @@ void main() {
         200);
 
     expect(
-        (await aad.GetListItemsResponse(config, "https://test.site",
-                "Bad Title", "bad_token", "refresh_token"))
+        (await aad.GetListItemsResponse(
+                "https://test.site", "Bad Title", "bad_token", "refresh_token"))
             .response
             .statusCode,
         404);
   });
 
   test('get my profile', () async {
-    final aad = new FlutterAAD(http: client);
+    final aad = new FlutterAAD(config, http: client);
 
     expect((await aad.GetMyProfile("token"))['access_token'], 'good-token-yay');
     expect(

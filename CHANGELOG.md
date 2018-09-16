@@ -1,3 +1,7 @@
+## [0.2.0] - 20180915
+
+* config is now stored on FlutterAAD instance so we don't have pass it into every function, but you can always make another instance with a different config if you need to!
+
 ## [0.1.4] - 20180915
 
 * Improving descriptions
