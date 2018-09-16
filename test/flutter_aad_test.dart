@@ -16,6 +16,7 @@ void main() {
     return http.Response(
         json.encode({
           'access_token': 'good-token-yay',
+          'refresh_token': 'good-token-yay',
         }),
         200,
         headers: {
@@ -138,50 +139,71 @@ void main() {
   test('refresh v1 token map request', () async {
     final aad = new FlutterAAD(config, http: client);
     final aadBad = new FlutterAAD(badConfig, http: client);
-    expect((await aad.RefreshTokenMap(""))["access_token"], "good-token-yay");
-    expect((await aadBad.RefreshTokenMap("")), null);
     expect(
-        (await aadBad.RefreshTokenMap("", onError: (msg) {
-          expect(msg, 'bad client id');
-        })),
+        (await aad.RefreshTokenMap()), null); //can't refresh if not logged in
+    expect(
+        (await aad.RefreshTokenMap(
+            refreshToken: "refresh_token"))["access_token"],
+        "good-token-yay");
+    expect((await aadBad.RefreshTokenMap()), null);
+    expect(
+        (await aadBad.RefreshTokenMap(
+            refreshToken: "refresh_token",
+            onError: (msg) {
+              expect(msg, 'bad client id');
+            })),
         null);
   });
 
   test('refresh v2 token map request', () async {
     final aad = new FlutterAAD(configV2, http: client);
     final aadBad = new FlutterAAD(badConfigV2, http: client);
-    expect((await aad.RefreshTokenMap(""))["access_token"], "good-token-yay");
-    expect((await aadBad.RefreshTokenMap("")), null);
     expect(
-        (await aadBad.RefreshTokenMap("", onError: (msg) {
-          expect(msg, 'bad client id');
-        })),
+        (await aad.RefreshTokenMap()), null); //can't refresh if not logged in
+    expect(
+        (await aad.RefreshTokenMap(
+            refreshToken: "refresh_token"))["access_token"],
+        "good-token-yay");
+    expect((await aadBad.RefreshTokenMap()), null);
+    expect(
+        (await aadBad.RefreshTokenMap(
+            refreshToken: "refresh_token",
+            onError: (msg) {
+              expect(msg, 'bad client id');
+            })),
         null);
   });
 
   test('get list items', () async {
-    final aad = new FlutterAAD(config, http: client);
+    final aad_logged_out = new FlutterAAD(config, http: client);
+    final aad = new FlutterAAD(config, http: client, fullToken: {
+      'access_token': 'token',
+      'refresh_token': 'refresh_token',
+    });
 
+    expect((await aad_logged_out.GetListItems("https://test.site", "Title")),
+        null); //can't refresh if not logged in
     expect(
         (await aad.GetListItems(
-                "https://test.site", "Title", "token", "refresh_token"))
+          "https://test.site",
+          "Title",
+        ))
             .map['access_token'],
         'good-token-yay');
     expect(
-        (await aad.GetListItems(
-                "https://test.site", "Title", "token", "refresh_token",
+        (await aad.GetListItems("https://test.site", "Title",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"]))
             .map['access_token'],
         'good-token-yay');
     expect(
-        (await aad.GetListItems(
-                "https://test.site", "Title", "token", "refresh_token",
+        (await aad.GetListItems("https://test.site", "Title",
+                token: "token",
+                refresh_token: "refresh_token",
                 orderby: "Created%20desc"))
             .map['access_token'],
         'good-token-yay');
     expect(
-        (await aad.GetListItems(
-                "https://test.site", "Title", "token", "refresh_token",
+        (await aad.GetListItems("https://test.site", "Title",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
                 orderby: "Created%20desc",
                 filter: [
@@ -192,13 +214,12 @@ void main() {
         'good-token-yay');
 
     expect(
-        (await aad.GetListItems(
-            "https://test.site", "Bad Title", "bad_token", "refresh_token")),
+        (await aad.GetListItems("https://test.site", "Bad Title",
+            token: "bad_token")),
         null);
 
     expect(
-        (await aad.GetListItemsResponse(
-                "https://test.site", "Title", "token", "refresh_token",
+        (await aad.GetListItemsResponse("https://test.site", "Title",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
                 orderby: "Created%20desc",
                 filter: [
@@ -210,19 +231,25 @@ void main() {
         200);
 
     expect(
-        (await aad.GetListItemsResponse(
-                "https://test.site", "Bad Title", "bad_token", "refresh_token"))
+        (await aad.GetListItemsResponse("https://test.site", "Bad Title",
+                token: "bad_token"))
             .response
             .statusCode,
         404);
   });
 
   test('get my profile', () async {
-    final aad = new FlutterAAD(config, http: client);
+    final aad_logged_out = new FlutterAAD(config, http: client);
+    final aad = new FlutterAAD(config, http: client, fullToken: {
+      'access_token': 'token',
+      'refresh_token': 'refresh_token',
+    });
 
-    expect((await aad.GetMyProfile("token"))['access_token'], 'good-token-yay');
+    expect((await aad_logged_out.GetMyProfile()),
+        null); //can't get profile without being logged in
+    expect((await aad.GetMyProfile())['access_token'], 'good-token-yay');
     expect(
-        (await aad.GetMyProfile("token", select: [
+        (await aad.GetMyProfile(select: [
           "ID",
           "Title",
           "Body",
@@ -231,12 +258,11 @@ void main() {
           "Expires"
         ]))['access_token'],
         'good-token-yay');
-    expect(
-        (await aad.GetMyProfile("token",
-            orderby: "Created%20desc"))['access_token'],
+    expect((await aad.GetMyProfile(orderby: "Created%20desc"))['access_token'],
         'good-token-yay');
     expect(
-        (await aad.GetMyProfile("token",
+        (await aad.GetMyProfile(
+            token: "token",
             select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
             orderby: "Created%20desc",
             filter: [
@@ -245,10 +271,10 @@ void main() {
             ]))['access_token'],
         'good-token-yay');
 
-    expect((await aad.GetMyProfile("bad_token")), null);
+    expect((await aad.GetMyProfile(token: "bad_token")), null);
 
     expect(
-        (await aad.GetMyProfileResponse("token",
+        (await aad.GetMyProfileResponse(
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
                 orderby: "Created%20desc",
                 filter: [
@@ -258,6 +284,7 @@ void main() {
             .statusCode,
         200);
 
-    expect((await aad.GetMyProfileResponse("bad_token")).statusCode, 404);
+    expect(
+        (await aad.GetMyProfileResponse(token: "bad_token")).statusCode, 404);
   });
 }

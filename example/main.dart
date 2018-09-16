@@ -46,12 +46,11 @@ void main() async {
 
   JsonEncoder encoder = new JsonEncoder.withIndent('  ');
 
-  var profile = await aad.GetMyProfile(full_token["access_token"]);
+  var profile = await aad.GetMyProfile();
   print("here is the profile:");
   print(encoder.convert(profile));
 
-  var lists = await aad.GetListItems(aadConfig.resource, "Documents",
-      full_token["access_token"], full_token["refresh_token"]);
+  var lists = await aad.GetListItems(aadConfig.resource, "Documents");
   print("Here is our lists:");
   print(encoder.convert(lists.map));
 }
