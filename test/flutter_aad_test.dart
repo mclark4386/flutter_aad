@@ -8,10 +8,30 @@ import 'package:test/test.dart';
 void main() {
   var client = new MockClient((request) async {
     if ((request.url.path.contains("/token") &&
-            !request.body.contains('client_id=client')) ||
-        (request.headers.containsKey("Authorization") &&
-            request.headers["Authorization"] != "Bearer token")) {
+        !request.body.contains('client_id=client'))) {
       return http.Response("bad client id", 404);
+    } else if ((request.url.path.contains("/items") ||
+            request.url.path.contains("/me")) &&
+        request.headers.containsKey("Authorization") &&
+        request.headers["Authorization"] != "Bearer token") {
+      return http.Response("bad token", 401);
+    } else if (request.url.path.contains("/token") &&
+        !request.body.contains('refresh_token=refresh_token') &&
+        request.body.contains('grant_type=refresh_token')) {
+      return http.Response("bad refresh token", 404);
+    } else if (request.url.path.contains("/token") &&
+        request.body.contains('refresh_token=refresh_token') &&
+        request.body.contains('grant_type=refresh_token') &&
+        request.body.contains('client_id=client')) {
+      return http.Response(
+          json.encode({
+            'access_token': 'token',
+            'refresh_token': 'refresh_token',
+          }),
+          200,
+          headers: {
+            'content-type': 'application/json',
+          });
     }
     return http.Response(
         json.encode({
@@ -158,11 +178,11 @@ void main() {
     expect(
         (await aad.RefreshTokenMap(
             refreshToken: "refresh_token"))["access_token"],
-        "good-token-yay");
+        "token");
     expect((await aadBad.RefreshTokenMap()), null);
     expect(
         (await aadBad.RefreshTokenMap(
-            refreshToken: "refresh_token",
+            refreshToken: "bad_refresh_token",
             onError: (msg) {
               expect(msg, 'bad client id');
             })),
@@ -182,11 +202,11 @@ void main() {
     expect(
         (await aad.RefreshTokenMap(
             refreshToken: "refresh_token"))["access_token"],
-        "good-token-yay");
+        "token");
     expect((await aadBad.RefreshTokenMap()), null);
     expect(
         (await aadBad.RefreshTokenMap(
-            refreshToken: "refresh_token",
+            refreshToken: "bad_refresh_token",
             onError: (msg) {
               expect(msg, 'bad client id');
             })),
@@ -195,51 +215,69 @@ void main() {
 
   test('get list items', () async {
     final aad_logged_out = new FlutterAAD(config, http: client);
+    final aad_one_off = new FlutterAAD(config, http: client, fullToken: {
+      'access_token': 'bad_token',
+      'refresh_token': 'refresh_token',
+    });
     final aad = new FlutterAAD(config, http: client, fullToken: {
       'access_token': 'token',
       'refresh_token': 'refresh_token',
     });
 
+    expect(aad_logged_out.fullToken, null);
     expect((await aad_logged_out.GetListItems("https://test.site", "Title")),
         null); //can't refresh if not logged in
+    expect(aad_logged_out.fullToken, null);
     expect(
         (await aad_logged_out.GetListItems("https://test.site", "Title",
             onError: (msg) {
           expect(msg, "No access token passed and saved full token is empty.");
         })),
         null);
+    expect(aad_logged_out.fullToken, null);
     expect(
         (await aad_logged_out.GetListItems("https://test.site", "Title",
             token: "token", onError: (msg) {
           expect(msg, "No refresh token passed and saved full token is empty.");
         })),
         null);
+    expect(aad_logged_out.fullToken, null);
     expect(
         (await aad_logged_out.GetListItems("https://test.site", "Title",
             token: "bad_token", refresh_token: "bad_token", onError: (msg) {
-          expect(msg, "bad client id");
+          expect(msg, "bad token");
         })),
         null);
+    expect(aad_logged_out.fullToken, null);
     expect(
         (await aad_logged_out.GetListItemsResponse("https://test.site", "Title",
             onError: (msg) {
           expect(msg, "No access token passed and saved full token is empty.");
         })),
         null);
+    expect(aad_logged_out.fullToken, null);
     expect(
         (await aad_logged_out.GetListItemsResponse("https://test.site", "Title",
             token: "token", onError: (msg) {
           expect(msg, "No refresh token passed and saved full token is empty.");
         })),
         null);
+    expect(aad_logged_out.fullToken, null);
     expect(
         (await aad_logged_out.GetListItemsResponse("https://test.site", "Title",
                 token: "bad_token", refresh_token: "bad_token", onError: (msg) {
-          expect(msg, "bad client id");
+          expect(msg, "bad token");
         }))
             .response
             .statusCode,
-        404);
+        401);
+    expect(aad_logged_out.fullToken, null);
+    //should refresh token
+    expect(
+        (await aad_one_off.GetListItemsResponse("https://test.site", "Title"))
+            .response
+            .statusCode,
+        200);
     expect(
         (await aad.GetListItems(
           "https://test.site",
@@ -272,7 +310,7 @@ void main() {
 
     expect(
         (await aad.GetListItems("https://test.site", "Bad Title",
-            token: "bad_token")),
+            token: "bad_token", refresh_token: "bad_token")),
         null);
 
     expect(
@@ -298,10 +336,10 @@ void main() {
 
     expect(
         (await aad.GetListItemsResponse("https://test.site", "Bad Title",
-                token: "bad_token"))
+                token: "bad_token", refresh_token: "bad_token"))
             .response
             .statusCode,
-        404);
+        401);
   });
 
   test('get list items w/o refresh', () async {
@@ -388,7 +426,14 @@ void main() {
                 "https://test.site", "Bad Title",
                 token: "bad_token"))
             .statusCode,
-        404);
+        401);
+
+    expect(
+        (await aad.GetListItemsResponseWORefresh(
+                "https://test.site", "Bad Title",
+                token: "2_bad_token"))
+            .statusCode,
+        401);
   });
 
   test('get my profile', () async {
@@ -438,6 +483,6 @@ void main() {
         200);
 
     expect(
-        (await aad.GetMyProfileResponse(token: "bad_token")).statusCode, 404);
+        (await aad.GetMyProfileResponse(token: "bad_token")).statusCode, 401);
   });
 }

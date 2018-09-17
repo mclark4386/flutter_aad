@@ -314,7 +314,7 @@ class FlutterAAD {
 
     // handle refresh
     Map<String, dynamic> full_token;
-    if (response.statusCode == 401 && rtoken != "") {
+    if (response.statusCode == 401) {
       //statusCode:401
       //body: {"error_description":"Invalid JWT token. The token is expired."}
       for (int i = 0; i < config.refreshTries; i++) {
