@@ -443,8 +443,12 @@ void main() {
       'refresh_token': 'refresh_token',
     });
 
-    expect((await aad_logged_out.GetMyProfile()),
-        null); //can't get profile without being logged in
+    expect((await aad_logged_out.GetMyProfile()), null);
+    expect(
+        (await aad_logged_out.GetMyProfile(onError: (msg) {
+          expect(msg, "No access token passed and saved full token is empty.");
+        })),
+        null);
     expect((await aad.GetMyProfile())['access_token'], 'good-token-yay');
     expect(
         (await aad.GetMyProfile(select: [
@@ -469,7 +473,13 @@ void main() {
             ]))['access_token'],
         'good-token-yay');
 
-    expect((await aad.GetMyProfile(token: "bad_token")), null);
+    expect(
+        (await aad.GetMyProfile(
+            token: "bad_token",
+            onError: (msg) {
+              expect(msg, "bad token");
+            })),
+        null);
 
     expect(
         (await aad.GetMyProfileResponse(
