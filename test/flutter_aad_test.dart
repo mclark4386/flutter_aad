@@ -221,6 +221,26 @@ void main() {
         })),
         null);
     expect(
+        (await aad_logged_out.GetListItemsResponse("https://test.site", "Title",
+            onError: (msg) {
+          expect(msg, "No access token passed and saved full token is empty.");
+        })),
+        null);
+    expect(
+        (await aad_logged_out.GetListItemsResponse("https://test.site", "Title",
+            token: "token", onError: (msg) {
+          expect(msg, "No refresh token passed and saved full token is empty.");
+        })),
+        null);
+    expect(
+        (await aad_logged_out.GetListItemsResponse("https://test.site", "Title",
+                token: "bad_token", refresh_token: "bad_token", onError: (msg) {
+          expect(msg, "bad client id");
+        }))
+            .response
+            .statusCode,
+        404);
+    expect(
         (await aad.GetListItems(
           "https://test.site",
           "Title",

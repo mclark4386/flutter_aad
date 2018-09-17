@@ -268,7 +268,7 @@ class FlutterAAD {
     }
 
     var rtoken = refresh_token;
-    if (tok == null || tok == "") {
+    if (rtoken == null || rtoken == "") {
       rtoken = this.currentRefreshToken;
       if (rtoken == "") {
         if (onError != null) {
