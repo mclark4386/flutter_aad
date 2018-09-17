@@ -9,7 +9,8 @@ import 'constants.dart';
 class FlutterAAD {
   final base_http.BaseClient http;
   Map<String, dynamic> _fullToken;
-  Map<String, dynamic> get fullToken => Map.from(_fullToken);
+  Map<String, dynamic> get fullToken =>
+      _fullToken == null ? null : Map.from(_fullToken);
   bool get loggedIn => (_fullToken != null &&
       _fullToken["access_token"] != null &&
       _fullToken["access_token"] != "");

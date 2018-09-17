@@ -68,8 +68,22 @@ void main() {
     apiVersion: 2,
   );
 
-  test('generates v1 auth code uris', () async {
+  test('getters should work as expected', () async {
     final aad = new FlutterAAD(config, http: client);
+    expect(aad.fullToken, null);
+    expect(aad.loggedIn, false);
+    expect(aad.currentToken, "");
+    expect(aad.currentRefreshToken, "");
+
+    await aad.GetTokenWithAuthCode("");
+    expect(aad.fullToken["access_token"], "good-token-yay");
+    expect(aad.loggedIn, true);
+    expect(aad.currentToken, "good-token-yay");
+    expect(aad.currentRefreshToken, "good-token-yay");
+  });
+
+  test('generates v1 auth code uris', () async {
+    final aad = new FlutterAAD(config);
     final aadWScope = new FlutterAAD(configWScope, http: client);
     expect(aad.GetAuthCodeURI(),
         "https://login.microsoftonline.com/common/oauth2/authorize?client_id=client&response_type=code&response_mode=query&resources=thing");
@@ -152,6 +166,11 @@ void main() {
             onError: (msg) {
               expect(msg, 'bad client id');
             })),
+        null);
+    expect(
+        (await aadBad.RefreshTokenMap(onError: (msg) {
+          expect(msg, "No refresh token passed and saved full token is empty.");
+        })),
         null);
   });
 
