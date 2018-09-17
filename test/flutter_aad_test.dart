@@ -288,9 +288,105 @@ void main() {
         200);
 
     expect(
+        (await aad.GetListItemsResponse("https://test.site", "Title", filter: [
+          "(StartTime le '01/01/1971')",
+          "(EndTime ge '01/01/1971')"
+        ]))
+            .response
+            .statusCode,
+        200);
+
+    expect(
         (await aad.GetListItemsResponse("https://test.site", "Bad Title",
                 token: "bad_token"))
             .response
+            .statusCode,
+        404);
+  });
+
+  test('get list items w/o refresh', () async {
+    final aad_logged_out = new FlutterAAD(config, http: client);
+    final aad = new FlutterAAD(config, http: client, fullToken: {
+      'access_token': 'token',
+      'refresh_token': 'refresh_token',
+    });
+
+    expect(
+        (await aad_logged_out.GetListItemsWORefresh(
+            "https://test.site", "Title")),
+        null); //can't refresh if not logged in
+    expect(
+        (await aad_logged_out.GetListItemsWORefresh(
+            "https://test.site", "Title", onError: (msg) {
+          expect(msg, "No access token passed and saved full token is empty.");
+        })),
+        null);
+    expect(
+        (await aad_logged_out.GetListItemsWORefresh(
+            "https://test.site", "Title",
+            token: "bad_token", onError: (msg) {
+          expect(msg, "bad client id");
+        })),
+        null);
+    expect(
+        (await aad.GetListItemsWORefresh(
+          "https://test.site",
+          "Title",
+        ))['access_token'],
+        'good-token-yay');
+    expect(
+        (await aad.GetListItemsWORefresh("https://test.site", "Title", select: [
+          "ID",
+          "Title",
+          "Body",
+          "Image",
+          "Created",
+          "Expires"
+        ]))['access_token'],
+        'good-token-yay');
+    expect(
+        (await aad.GetListItemsWORefresh("https://test.site", "Title",
+            token: "token", orderby: "Created%20desc"))['access_token'],
+        'good-token-yay');
+    expect(
+        (await aad.GetListItemsWORefresh("https://test.site", "Title",
+            select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
+            orderby: "Created%20desc",
+            filter: [
+              "(StartTime le '01/01/1971')",
+              "(EndTime ge '01/01/1971')"
+            ]))['access_token'],
+        'good-token-yay');
+
+    expect(
+        (await aad.GetListItemsWORefresh("https://test.site", "Bad Title",
+            token: "bad_token")),
+        null);
+
+    expect(
+        (await aad.GetListItemsResponseWORefresh("https://test.site", "Title",
+                select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
+                orderby: "Created%20desc",
+                filter: [
+                  "(StartTime le '01/01/1971')",
+                  "(EndTime ge '01/01/1971')"
+                ]))
+            .statusCode,
+        200);
+
+    expect(
+        (await aad.GetListItemsResponseWORefresh("https://test.site", "Title",
+                filter: [
+              "(StartTime le '01/01/1971')",
+              "(EndTime ge '01/01/1971')"
+            ]))
+            .statusCode,
+        200);
+
+    expect(
+        (await aad.GetListItemsResponseWORefresh(
+                "https://test.site", "Bad Title",
+                token: "bad_token"))
             .statusCode,
         404);
   });
