@@ -1,4 +1,8 @@
-## [0.2.1] - 20180915
+## [0.2.2] - 20180917
+
+* added stream for watching login state
+
+## [0.2.1] - 20180917
 
 * now have 100% coverage
 * fixed a couple of bugs found by improving the testing
