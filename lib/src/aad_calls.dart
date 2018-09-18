@@ -8,6 +8,11 @@ import 'constants.dart';
 
 class FlutterAAD {
   final base_http.BaseClient http;
+  StreamController<bool> _tokenStreamController =
+      StreamController<bool>.broadcast();
+  StreamSink<bool> get _tokenIn => _tokenStreamController.sink;
+  Stream<bool> get login => _tokenStreamController.stream;
+
   Map<String, dynamic> _fullToken;
   Map<String, dynamic> get fullToken =>
       _fullToken == null ? null : Map.from(_fullToken);
@@ -36,6 +41,11 @@ class FlutterAAD {
       {base_http.BaseClient http, Map<String, dynamic> fullToken})
       : this.http = http ?? new base_http.Client(),
         this._fullToken = fullToken;
+
+  void Logout() {
+    this._fullToken = null;
+    this._tokenIn.add(false);
+  }
 
   /// Generates the OAuth2 URI to be used for a webview to renderer to be able to send
   /// back the authorization code properly.
@@ -113,6 +123,7 @@ class FlutterAAD {
         response.statusCode >= 200 &&
         response.statusCode < 400) {
       _fullToken = json.decode(response.body);
+      _tokenIn.add(this.loggedIn);
       return _fullToken;
     } else {
       if (onError != null) {
@@ -157,6 +168,7 @@ class FlutterAAD {
         body: body);
     if (response.statusCode >= 200 && response.statusCode < 400) {
       _fullToken = json.decode(response.body);
+      _tokenIn.add(this.loggedIn);
       return _fullToken;
     } else {
       if (onError != null) {

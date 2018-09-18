@@ -123,7 +123,15 @@ void main() {
   test('make v1 token request', () async {
     final aad = new FlutterAAD(config, http: client);
     final aadBad = new FlutterAAD(badConfig, http: client);
+
+    expect(aad.login, emitsInAnyOrder([true, false]));
+
     expect((await aad.GetTokenWithAuthCode("")), "good-token-yay");
+    expect(aad.loggedIn, true);
+    aad.Logout();
+    expect(aad.loggedIn, false);
+    expect(aad.fullToken, null);
+
     expect((await aadBad.GetTokenWithAuthCode("")), "");
     expect(
         (await aadBad.GetTokenWithAuthCode("", onError: (msg) {
