@@ -463,6 +463,7 @@ class FlutterAAD {
   /// Call out for a general query to the site
   Future<AADResponse> GetSharepointSearchResponse(String site,
       {String token,
+      String query,
       String refresh_token,
       List<String> select,
       String orderby,
@@ -498,45 +499,25 @@ class FlutterAAD {
     }
     url += "_api/search/query";
 
-    var first = true;
+    url += "?querytext='" + (query ?? "*") + "'";
     if (select != null && select.length > 0) {
-      url += "?\$select=" + select.join(",");
-      first = false;
+      url += "&\$selectproperties='" + select.join(",") + "'";
     }
 
     if (orderby != null && orderby.length > 0) {
-      if (first) {
-        url += "?\$sortlist=$orderby";
-        first = false;
-      } else {
-        url += "&\$sortlist=$orderby";
-      }
+      url += "&\$sortlist='$orderby'";
     }
 
     if (sourceid != null && sourceid.length > 0) {
-      if (first) {
-        url += "?\$sourceid=$sourceid";
-        first = false;
-      } else {
-        url += "&\$sourceid=$sourceid";
-      }
+      url += "&\$sourceid='$sourceid'";
     }
 
     if (rowlimit != null && rowlimit > 0) {
-      if (first) {
-        url += "?\$rowlimit=$rowlimit";
-        first = false;
-      } else {
-        url += "&\$rowlimit=$rowlimit";
-      }
+      url += "&\$rowlimit=$rowlimit";
     }
 
     if (startrow != null && startrow > 0) {
-      if (first) {
-        url += "?\$startrow=$startrow";
-      } else {
-        url += "&\$startrow=$startrow";
-      }
+      url += "&\$startrow=$startrow";
     }
 
     var response = await http.get(url, headers: {
@@ -582,6 +563,7 @@ class FlutterAAD {
   Future<base_http.Response> GetSharepointSearchResponseWORefresh(
     String site, {
     String token,
+    String query,
     List<String> select,
     String orderby,
     String sourceid,
@@ -602,45 +584,25 @@ class FlutterAAD {
     }
     url += "_api/search/query";
 
-    var first = true;
+    url += "?querytext='" + (query ?? "*") + "'";
     if (select != null && select.length > 0) {
-      url += "?\$select=" + select.join(",");
-      first = false;
+      url += "&\$selectproperties='" + select.join(",") + "'";
     }
 
     if (orderby != null && orderby.length > 0) {
-      if (first) {
-        url += "?\$sortlist=$orderby";
-        first = false;
-      } else {
-        url += "&\$sortlist=$orderby";
-      }
+      url += "&\$sortlist='$orderby'";
     }
 
     if (sourceid != null && sourceid.length > 0) {
-      if (first) {
-        url += "?\$sourceid=$sourceid";
-        first = false;
-      } else {
-        url += "&\$sourceid=$sourceid";
-      }
+      url += "&\$sourceid='$sourceid'";
     }
 
     if (rowlimit != null && rowlimit > 0) {
-      if (first) {
-        url += "?\$rowlimit=$rowlimit";
-        first = false;
-      } else {
-        url += "&\$rowlimit=$rowlimit";
-      }
+      url += "&\$rowlimit=$rowlimit";
     }
 
     if (startrow != null && startrow > 0) {
-      if (first) {
-        url += "?\$startrow=$startrow";
-      } else {
-        url += "&\$startrow=$startrow";
-      }
+      url += "&\$startrow=$startrow";
     }
 
     return await http.get(url, headers: {
