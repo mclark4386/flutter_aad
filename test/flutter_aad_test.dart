@@ -616,7 +616,8 @@ void main() {
     expect(
         (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
                 select: ["FirstName", "LastName", "AccountName"],
-                orderby: "LastName:ascending"))
+                orderby: "LastName:ascending",
+                sourceid: "id"))
             .statusCode,
         200);
 
@@ -625,25 +626,25 @@ void main() {
                 orderby: "LastName:ascending",
                 sourceid: "id",
                 rowlimit: 100,
-                startrow: 0))
+                startrow: 10))
             .statusCode,
         200);
 
     expect(
         (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
-                sourceid: "id", rowlimit: 100, startrow: 0))
+                sourceid: "id", rowlimit: 100, startrow: 10))
             .statusCode,
         200);
 
     expect(
         (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
-                rowlimit: 100, startrow: 0))
+                rowlimit: 100, startrow: 10))
             .statusCode,
         200);
 
     expect(
         (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
-                startrow: 0))
+                startrow: 10))
             .statusCode,
         200);
 
