@@ -459,4 +459,191 @@ class FlutterAAD {
       return null;
     }
   }
+
+  /// Call out for a general query to the site
+  Future<AADResponse> GetSharepointSearchResponse(String site,
+    {String token,
+    String refresh_token,
+    List<String> select,
+    String orderby,
+    String sourceid,
+    int rowlimit,
+    int startrow,
+    void onError(String msg)}) async {
+      var tok = token;
+      if (tok == null || tok == "") {
+        tok = this.currentToken;
+        if (tok == "") {
+          if (onError != null) {
+            onError("No access token passed and saved full token is empty.");
+          }
+          return null;
+        }
+      }
+
+      var rtoken = refresh_token;
+      if (rtoken == null || rtoken == "") {
+        rtoken = this.currentRefreshToken;
+        if (rtoken == "") {
+          if (onError != null) {
+            onError("No refresh token passed and saved full token is empty.");
+          }
+          return null;
+        }
+      }
+
+      var url = site;
+      if (!site.endsWith("/")) {
+        url += "/";
+      }
+      url += "_api/search/query";
+
+      var first = true;
+      if (select != null && select.length > 0) {
+        url += "?\$select=" + select.join(",");
+        first = false;
+      }
+
+      if (orderby != null && orderby.length > 0) {
+        if (first) {
+          url += "?\$sortlist=$orderby";
+        } else {
+          url += "&\$sortlist=$orderby";
+        }
+      }
+
+      if (sourceid != null && sourceid.length > 0) {
+        if (first) {
+          url += "?\$sourceid=$sourceid";
+        } else {
+          url += "&\$sourceid=$sourceid";
+        }
+      }
+
+      if (rowlimit != null && rowlimit > 0) {
+        if (first) {
+          url += "?\$rowlimit=$rowlimit";
+        } else {
+          url += "&\$rowlimit=$rowlimit";
+        }
+      }
+
+      if (startrow != null && startrow > 0) {
+        if (first) {
+          url += "?\$startrow=$startrow";
+        } else {
+          url += "&\$startrow=$startrow";
+        }
+      }
+
+      var response = await http.get(url, headers: {
+        "Accept": "application/json;odata=verbose",
+        "Authorization": "Bearer $tok"
+      });
+
+      Map<String, dynamic> full_token;
+      if (response.statusCode == 401) {
+        //statusCode:401
+        //body: {"error_description":"Invalid JWT token. The token is expired."}
+        for (int i = 0; i < config.refreshTries; i++) {
+          full_token = await this.RefreshTokenMap(refreshToken: rtoken);
+          if (full_token != null) {
+            var sub_resp = await GetSharepointSearchResponseWORefresh(
+              site,
+              select: select, 
+              orderby: orderby, 
+              sourceid: sourceid, 
+              rowlimit: rowlimit, 
+              startrow: startrow
+            );
+            if (sub_resp.statusCode >= 200 && sub_resp.statusCode < 400) {
+              return AADResponse(sub_resp, true, full_token);
+            }
+          }
+        }
+        print(
+            "Failed to properly refresh token! Calling onError with original response body.");
+      }
+      if (response.statusCode < 200 ||
+          response.statusCode == 400 ||
+          response.statusCode > 401 ||
+          (response.statusCode == 401 && full_token == null)) {
+        if (onError != null) {
+          onError(response.body);
+        }
+      }
+
+      return AADResponse(response);
+    }
+  
+  /// Call out for a general query to the site
+  /// DOES NOT TRY TO REFRESH TOKEN FOR YOU
+  Future <base_http.Response> GetSharepointSearchResponseWORefresh(
+    String site,
+    {
+      String token,
+      List<String> select,
+      String orderby,
+      String sourceid,
+      int rowlimit,
+      int startrow,
+    }
+  ) async {
+    var tok = token;
+    if (tok == null || tok == "") {
+      tok = this.currentToken;
+      if (tok == "") {
+        return null;
+      }
+    }
+
+    var url = site;
+    if (!site.endsWith("/")) {
+      url += "/";
+    }
+    url += "_api/search/query";
+
+    var first = true;
+    if (select != null && select.length > 0) {
+      url += "?\$select=" + select.join(",");
+      first = false;
+    }
+
+    if (orderby != null && orderby.length > 0) {
+      if (first) {
+        url += "?\$sortlist=$orderby";
+      } else {
+        url += "&\$sortlist=$orderby";
+      }
+    }
+
+    if (sourceid != null && sourceid.length > 0) {
+      if (first) {
+        url += "?\$sourceid=$sourceid";
+      } else {
+        url += "&\$sourceid=$sourceid";
+      }
+    }
+
+    if (rowlimit != null && rowlimit > 0) {
+      if (first) {
+        url += "?\$rowlimit=$rowlimit";
+      } else {
+        url += "&\$rowlimit=$rowlimit";
+      }
+    }
+
+    if (startrow != null && startrow > 0) {
+      if (first) {
+        url += "?\$startrow=$startrow";
+      } else {
+        url += "&\$startrow=$startrow";
+      }
+    }
+
+    return await http.get(url, headers: {
+      "Accept": "application/json;odata=verbose",
+      "Authorization": "Bearer $tok"
+    });
+  }
 }
