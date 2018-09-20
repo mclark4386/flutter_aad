@@ -1,3 +1,7 @@
+## [0.2.3] - 20180920
+
+* added sharepoint search call
+
 ## [0.2.2] - 20180917
 
 * added stream for watching login state
