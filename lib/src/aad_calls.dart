@@ -507,6 +507,7 @@ class FlutterAAD {
     if (orderby != null && orderby.length > 0) {
       if (first) {
         url += "?\$sortlist=$orderby";
+        first = false;
       } else {
         url += "&\$sortlist=$orderby";
       }
@@ -515,6 +516,7 @@ class FlutterAAD {
     if (sourceid != null && sourceid.length > 0) {
       if (first) {
         url += "?\$sourceid=$sourceid";
+        first = false;
       } else {
         url += "&\$sourceid=$sourceid";
       }
@@ -523,6 +525,7 @@ class FlutterAAD {
     if (rowlimit != null && rowlimit > 0) {
       if (first) {
         url += "?\$rowlimit=$rowlimit";
+        first = false;
       } else {
         url += "&\$rowlimit=$rowlimit";
       }
@@ -608,6 +611,7 @@ class FlutterAAD {
     if (orderby != null && orderby.length > 0) {
       if (first) {
         url += "?\$sortlist=$orderby";
+        first = false;
       } else {
         url += "&\$sortlist=$orderby";
       }
@@ -616,6 +620,7 @@ class FlutterAAD {
     if (sourceid != null && sourceid.length > 0) {
       if (first) {
         url += "?\$sourceid=$sourceid";
+        first = false;
       } else {
         url += "&\$sourceid=$sourceid";
       }
@@ -624,6 +629,7 @@ class FlutterAAD {
     if (rowlimit != null && rowlimit > 0) {
       if (first) {
         url += "?\$rowlimit=$rowlimit";
+        first = false;
       } else {
         url += "&\$rowlimit=$rowlimit";
       }
