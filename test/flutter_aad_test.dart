@@ -11,7 +11,7 @@ void main() {
         !request.body.contains('client_id=client'))) {
       return http.Response("bad client id", 404);
     } else if ((request.url.path.contains("/items") ||
-            request.url.path.contains("/me")) &&
+            request.url.path.contains("/me") || request.url.path.contains("/query")) &&
         request.headers.containsKey("Authorization") &&
         request.headers["Authorization"] != "Bearer token") {
       return http.Response("bad token", 401);
@@ -502,5 +502,109 @@ void main() {
 
     expect(
         (await aad.GetMyProfileResponse(token: "bad_token")).statusCode, 401);
+  });
+
+  test('get sharepoint search', () async {
+    // setup
+    final aad_logged_out = new FlutterAAD(config, http: client);
+    final aad_one_off = new FlutterAAD(config, http: client, fullToken: {
+      'access_token': 'bad_token',
+      'refresh_token': 'refresh_token',
+    });
+    final aad = new FlutterAAD(config, http: client, fullToken: {
+      'access_token': 'token',
+      'refresh_token': 'refresh_token',
+    });
+
+    // null token if logged out
+    expect(aad_logged_out.fullToken, null);
+
+    // null response if logged out
+    expect((await aad_logged_out.GetSharepointSearchResponse("https://test.site")),
+        null);
+    expect(aad_logged_out.fullToken, null);
+    
+    // null response with message
+    expect(
+        (await aad_logged_out.GetSharepointSearchResponse("https://test.site",
+            onError: (msg) {
+          expect(msg, "No access token passed and saved full token is empty.");
+        })),
+        null);
+    expect(aad_logged_out.fullToken, null);
+
+    // null response with token but no refresh token
+    expect(
+        (await aad_logged_out.GetSharepointSearchResponse("https://test.site",
+            token: "token", onError: (msg) {
+          expect(msg, "No refresh token passed and saved full token is empty.");
+        })),
+        null);
+    expect(aad_logged_out.fullToken, null);
+
+    // 401 response with bad tokens
+    expect(
+        (await aad_logged_out.GetSharepointSearchResponse("https://test.site",
+                token: "bad_token", refresh_token: "bad_token", onError: (msg) {
+          expect(msg, "bad token");
+        }))
+            .response
+            .statusCode,
+        401);
+    expect(aad_logged_out.fullToken, null);
+
+    // successful response with valid refresh token
+    expect(
+    (await aad_one_off.GetSharepointSearchResponse("https://test.site"))
+        .response
+        .statusCode,
+    200);
+
+    // successful response with valid credentials and query params
+    expect(
+    (await aad.GetSharepointSearchResponse("https://test.site",
+            select: ["FirstName", "LastName", "AccountName"],
+            orderby: "LastName:ascending",
+            rowlimit: 100,
+            startrow: 1))
+        .response
+        .statusCode,
+    200);
+
+    // 401 with bad tokens overriding saved tokens
+    expect(
+    (await aad.GetSharepointSearchResponse("https://test.site",
+            token: "bad_token", refresh_token: "bad_token"))
+        .response
+        .statusCode,
+    401);
+  });
+
+  test('get sharepoint search w/o refresh', () async {
+    final aad = new FlutterAAD(config, http: client, fullToken: {
+      'access_token': 'token',
+      'refresh_token': 'refresh_token',
+    });
+
+    expect(
+        (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
+                select: ["FirstName", "LastName", "AccountName"],
+                orderby: "LastName:ascending"))
+            .statusCode,
+        200);
+
+    expect(
+        (await aad.GetSharepointSearchResponseWORefresh(
+                "https://test.site",
+                token: "bad_token"))
+            .statusCode,
+        401);
+
+    expect(
+        (await aad.GetSharepointSearchResponseWORefresh(
+                "https://test.site",
+                token: "2_bad_token"))
+            .statusCode,
+        401);
   });
 }
