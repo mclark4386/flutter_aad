@@ -11,7 +11,8 @@ void main() {
         !request.body.contains('client_id=client'))) {
       return http.Response("bad client id", 404);
     } else if ((request.url.path.contains("/items") ||
-            request.url.path.contains("/me") || request.url.path.contains("/query")) &&
+            request.url.path.contains("/me") ||
+            request.url.path.contains("/query")) &&
         request.headers.containsKey("Authorization") &&
         request.headers["Authorization"] != "Bearer token") {
       return http.Response("bad token", 401);
@@ -520,10 +521,11 @@ void main() {
     expect(aad_logged_out.fullToken, null);
 
     // null response if logged out
-    expect((await aad_logged_out.GetSharepointSearchResponse("https://test.site")),
+    expect(
+        (await aad_logged_out.GetSharepointSearchResponse("https://test.site")),
         null);
     expect(aad_logged_out.fullToken, null);
-    
+
     // null response with message
     expect(
         (await aad_logged_out.GetSharepointSearchResponse("https://test.site",
@@ -555,29 +557,54 @@ void main() {
 
     // successful response with valid refresh token
     expect(
-    (await aad_one_off.GetSharepointSearchResponse("https://test.site"))
-        .response
-        .statusCode,
-    200);
+        (await aad_one_off.GetSharepointSearchResponse("https://test.site"))
+            .response
+            .statusCode,
+        200);
 
     // successful response with valid credentials and query params
     expect(
-    (await aad.GetSharepointSearchResponse("https://test.site",
-            select: ["FirstName", "LastName", "AccountName"],
-            orderby: "LastName:ascending",
-            rowlimit: 100,
-            startrow: 1))
-        .response
-        .statusCode,
-    200);
+        (await aad.GetSharepointSearchResponse("https://test.site",
+                select: ["FirstName", "LastName", "AccountName"],
+                sourceid: "id",
+                orderby: "LastName:ascending",
+                rowlimit: 100,
+                startrow: 1))
+            .response
+            .statusCode,
+        200);
+    expect(
+        (await aad.GetSharepointSearchResponse("https://test.site",
+                sourceid: "id", rowlimit: 100, startrow: 1))
+            .response
+            .statusCode,
+        200);
+    expect(
+        (await aad.GetSharepointSearchResponse("https://test.site",
+                orderby: "LastName:ascending", rowlimit: 100, startrow: 1))
+            .response
+            .statusCode,
+        200);
+    expect(
+        (await aad.GetSharepointSearchResponse("https://test.site",
+                rowlimit: 100, startrow: 1))
+            .response
+            .statusCode,
+        200);
+    expect(
+        (await aad.GetSharepointSearchResponse("https://test.site",
+                startrow: 1))
+            .response
+            .statusCode,
+        200);
 
     // 401 with bad tokens overriding saved tokens
     expect(
-    (await aad.GetSharepointSearchResponse("https://test.site",
-            token: "bad_token", refresh_token: "bad_token"))
-        .response
-        .statusCode,
-    401);
+        (await aad.GetSharepointSearchResponse("https://test.site",
+                token: "bad_token", refresh_token: "bad_token"))
+            .response
+            .statusCode,
+        401);
   });
 
   test('get sharepoint search w/o refresh', () async {
@@ -594,15 +621,40 @@ void main() {
         200);
 
     expect(
-        (await aad.GetSharepointSearchResponseWORefresh(
-                "https://test.site",
+        (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
+                orderby: "LastName:ascending",
+                sourceid: "id",
+                rowlimit: 100,
+                startrow: 0))
+            .statusCode,
+        200);
+
+    expect(
+        (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
+                sourceid: "id", rowlimit: 100, startrow: 0))
+            .statusCode,
+        200);
+
+    expect(
+        (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
+                rowlimit: 100, startrow: 0))
+            .statusCode,
+        200);
+
+    expect(
+        (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
+                startrow: 0))
+            .statusCode,
+        200);
+
+    expect(
+        (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
                 token: "bad_token"))
             .statusCode,
         401);
 
     expect(
-        (await aad.GetSharepointSearchResponseWORefresh(
-                "https://test.site",
+        (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
                 token: "2_bad_token"))
             .statusCode,
         401);
