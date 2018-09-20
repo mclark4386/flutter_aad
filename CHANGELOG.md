@@ -1,3 +1,7 @@
+## [0.2.4] - 20180920
+
+* improved sharepoint search call
+
 ## [0.2.3] - 20180920
 
 * added sharepoint search call
