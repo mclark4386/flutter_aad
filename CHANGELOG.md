@@ -1,3 +1,7 @@
+## [0.2.5] - 20180921
+
+* added expand to list item calls
+
 ## [0.2.4] - 20180920
 
 * improved sharepoint search call

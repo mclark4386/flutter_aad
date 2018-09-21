@@ -186,6 +186,7 @@ class FlutterAAD {
       String refresh_token,
       List<String> select,
       String orderby,
+      List<String> expand,
       List<String> filter,
       void onError(String msg)}) async {
     var tok = token;
@@ -215,7 +216,8 @@ class FlutterAAD {
         refresh_token: rtoken,
         select: select,
         orderby: orderby,
-        filter: filter);
+        filter: filter,
+        expand: expand);
     if (response.response.statusCode >= 200 &&
         response.response.statusCode < 400) {
       return AADMap(json.decode(response.response.body),
@@ -237,6 +239,7 @@ class FlutterAAD {
       List<String> select,
       String orderby,
       List<String> filter,
+      List<String> expand,
       void onError(String msg)}) async {
     var tok = token;
     if (tok == null || tok == "") {
@@ -250,7 +253,11 @@ class FlutterAAD {
     }
 
     var response = await this.GetListItemsResponseWORefresh(site, title,
-        token: tok, select: select, orderby: orderby, filter: filter);
+        token: tok,
+        select: select,
+        orderby: orderby,
+        filter: filter,
+        expand: expand);
     if (response != null &&
         response.statusCode >= 200 &&
         response.statusCode < 400) {
@@ -267,6 +274,7 @@ class FlutterAAD {
       List<String> select,
       String orderby,
       List<String> filter,
+      List<String> expand,
       void onError(String msg)}) async {
     var tok = token;
     if (tok == null || tok == "") {
@@ -314,8 +322,18 @@ class FlutterAAD {
     if (orderby != null && orderby.length > 0) {
       if (first) {
         url += "?\$orderby=$orderby";
+        first = false;
       } else {
         url += "&\$orderby=$orderby";
+      }
+    }
+
+    if (expand != null && expand.length > 0) {
+      if (first) {
+        url += "?\expand=" + expand.join(",");
+        first = false;
+      } else {
+        url += "&\expand=" + expand.join(",");
       }
     }
 
@@ -333,7 +351,7 @@ class FlutterAAD {
         full_token = await this.RefreshTokenMap(refreshToken: rtoken);
         if (full_token != null) {
           var sub_resp = await GetListItemsResponseWORefresh(site, title,
-              select: select, orderby: orderby, filter: filter);
+              select: select, orderby: orderby, filter: filter, expand: expand);
           if (sub_resp.statusCode >= 200 && sub_resp.statusCode < 400) {
             return AADResponse(sub_resp, true, full_token);
           }
@@ -361,7 +379,8 @@ class FlutterAAD {
       {String token,
       List<String> select,
       String orderby,
-      List<String> filter}) async {
+      List<String> filter,
+      List<String> expand}) async {
     var tok = token;
     if (tok == null || tok == "") {
       tok = this.currentToken;
@@ -394,8 +413,18 @@ class FlutterAAD {
     if (orderby != null && orderby.length > 0) {
       if (first) {
         url += "?\$orderby=$orderby";
+        first = false;
       } else {
         url += "&\$orderby=$orderby";
+      }
+    }
+
+    if (expand != null && expand.length > 0) {
+      if (first) {
+        url += "?\expand=" + expand.join(",");
+        first = false;
+      } else {
+        url += "&\expand=" + expand.join(",");
       }
     }
 

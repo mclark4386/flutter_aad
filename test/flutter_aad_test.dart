@@ -295,6 +295,14 @@ void main() {
             .map['access_token'],
         'good-token-yay');
     expect(
+        (await aad.GetListItems(
+          "https://test.site",
+          "Title",
+          expand: ["test"],
+        ))
+            .map['access_token'],
+        'good-token-yay');
+    expect(
         (await aad.GetListItems("https://test.site", "Title",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"]))
             .map['access_token'],
@@ -310,6 +318,7 @@ void main() {
         (await aad.GetListItems("https://test.site", "Title",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
                 orderby: "Created%20desc",
+                expand: ["test"],
                 filter: [
                   "(StartTime le '01/01/1971')",
                   "(EndTime ge '01/01/1971')"
@@ -326,6 +335,7 @@ void main() {
         (await aad.GetListItemsResponse("https://test.site", "Title",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
                 orderby: "Created%20desc",
+                expand: ["test"],
                 filter: [
                   "(StartTime le '01/01/1971')",
                   "(EndTime ge '01/01/1971')"
@@ -339,6 +349,13 @@ void main() {
           "(StartTime le '01/01/1971')",
           "(EndTime ge '01/01/1971')"
         ]))
+            .response
+            .statusCode,
+        200);
+
+    expect(
+        (await aad.GetListItemsResponse("https://test.site", "Title",
+                expand: ["test"]))
             .response
             .statusCode,
         200);
@@ -379,17 +396,16 @@ void main() {
         (await aad.GetListItemsWORefresh(
           "https://test.site",
           "Title",
+          expand: ["test"],
         ))['access_token'],
         'good-token-yay');
     expect(
-        (await aad.GetListItemsWORefresh("https://test.site", "Title", select: [
-          "ID",
+        (await aad.GetListItemsWORefresh(
+          "https://test.site",
           "Title",
-          "Body",
-          "Image",
-          "Created",
-          "Expires"
-        ]))['access_token'],
+          select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
+          expand: ["test"],
+        ))['access_token'],
         'good-token-yay');
     expect(
         (await aad.GetListItemsWORefresh("https://test.site", "Title",
@@ -414,6 +430,7 @@ void main() {
         (await aad.GetListItemsResponseWORefresh("https://test.site", "Title",
                 select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
                 orderby: "Created%20desc",
+                expand: ["test"],
                 filter: [
                   "(StartTime le '01/01/1971')",
                   "(EndTime ge '01/01/1971')"
@@ -427,6 +444,12 @@ void main() {
               "(StartTime le '01/01/1971')",
               "(EndTime ge '01/01/1971')"
             ]))
+            .statusCode,
+        200);
+
+    expect(
+        (await aad.GetListItemsResponseWORefresh("https://test.site", "Title",
+                expand: ["test"]))
             .statusCode,
         200);
 
