@@ -15,7 +15,7 @@ void main() {
             request.url.path.contains("/query")) &&
         request.headers.containsKey("Authorization") &&
         request.headers["Authorization"] != "Bearer token") {
-      return http.Response("bad token", 401);
+      return http.Response("Bad JWT. The token is expired.", 401);
     } else if (request.url.path.contains("/token") &&
         !request.body.contains('refresh_token=refresh_token') &&
         request.body.contains('grant_type=refresh_token')) {
@@ -254,7 +254,7 @@ void main() {
     expect(
         (await aad_logged_out.GetListItems("https://test.site", "Title",
             token: "bad_token", refresh_token: "bad_token", onError: (msg) {
-          expect(msg, "bad token");
+          expect(msg, "Bad JWT. The token is expired.");
         })),
         null);
     expect(aad_logged_out.fullToken, null);
@@ -275,7 +275,7 @@ void main() {
     expect(
         (await aad_logged_out.GetListItemsResponse("https://test.site", "Title",
                 token: "bad_token", refresh_token: "bad_token", onError: (msg) {
-          expect(msg, "bad token");
+          expect(msg, "Bad JWT. The token is expired.");
         }))
             .response
             .statusCode,
@@ -509,7 +509,7 @@ void main() {
         (await aad.GetMyProfile(
             token: "bad_token",
             onError: (msg) {
-              expect(msg, "bad token");
+              expect(msg, "Bad JWT. The token is expired.");
             })),
         null);
 
@@ -571,7 +571,7 @@ void main() {
     expect(
         (await aad_logged_out.GetSharepointSearchResponse("https://test.site",
                 token: "bad_token", refresh_token: "bad_token", onError: (msg) {
-          expect(msg, "bad token");
+          expect(msg, "Bad JWT. The token is expired.");
         }))
             .response
             .statusCode,
