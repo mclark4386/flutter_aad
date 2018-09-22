@@ -1,3 +1,7 @@
+## [0.2.6] - 20180921
+
+* made refresh more selective
+
 ## [0.2.5] - 20180921
 
 * added expand to list item calls
