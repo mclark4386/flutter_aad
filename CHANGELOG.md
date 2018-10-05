@@ -1,3 +1,7 @@
+## [0.2.7] - 20181004
+
+* use latest http
+
 ## [0.2.6] - 20180921
 
 * made refresh more selective
