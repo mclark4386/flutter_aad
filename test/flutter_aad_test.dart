@@ -154,6 +154,21 @@ void main() {
         null);
   });
 
+  test('make v1 token response request', () async {
+    final aad = new FlutterAAD(config, http: client);
+    final aadBad = new FlutterAAD(badConfig, http: client);
+    expect(
+        (await aad.GetTokenResponseWithAuthCode("")).full_token["access_token"],
+        "good-token-yay");
+    expect((await aadBad.GetTokenResponseWithAuthCode("")).full_token, null);
+    expect(
+        (await aadBad.GetTokenResponseWithAuthCode("", onError: (msg) {
+          expect(msg, 'bad client id');
+        }))
+            .full_token,
+        null);
+  });
+
   test('make v2 token request', () async {
     final aad = new FlutterAAD(configWScopeV2, http: client);
     final aadBad = new FlutterAAD(badConfigWScopeV2, http: client);
@@ -176,6 +191,21 @@ void main() {
         (await aadBad.GetTokenMapWithAuthCode("", onError: (msg) {
           expect(msg, 'bad client id');
         })),
+        null);
+  });
+
+  test('make v2 token response request', () async {
+    final aad = new FlutterAAD(configWScopeV2, http: client);
+    final aadBad = new FlutterAAD(badConfigWScopeV2, http: client);
+    expect(
+        (await aad.GetTokenResponseWithAuthCode("")).full_token["access_token"],
+        "good-token-yay");
+    expect((await aadBad.GetTokenResponseWithAuthCode("")).full_token, null);
+    expect(
+        (await aadBad.GetTokenResponseWithAuthCode("", onError: (msg) {
+          expect(msg, 'bad client id');
+        }))
+            .full_token,
         null);
   });
 

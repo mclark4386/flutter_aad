@@ -93,8 +93,10 @@ class FlutterAAD {
   /// Call out to OAuth2 and get the full map token back given an authentication
   /// code or null if the call isn't successful. This will also call the passed
   /// onError with the body of the error response.
-  Future<Map<String, dynamic>> GetTokenMapWithAuthCode(String authCode,
-      {void onError(String msg)}) async {
+  Future<Map<String, dynamic>> GetTokenMapWithAuthCode(
+    String authCode, {
+    void onError(String msg),
+  }) async {
     var body = {
       "grant_type": "authorization_code",
       "client_id": config.clientID,
@@ -111,12 +113,17 @@ class FlutterAAD {
     }
     base_http.Response response;
     if (config.apiVersion == 1) {
-      response = await http.post(Uri.encodeFull(LOGIN_URI),
-          headers: {"Content-Type": "application/x-www-form-urlencoded"},
-          body: body);
+      response = await http.post(
+        Uri.encodeFull(LOGIN_URI),
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: body,
+      );
     } else {
-      response = await http.post(Uri.encodeFull(V2_LOGIN_URI),
-          headers: {"Accept": "application/json;odata=verbose"}, body: body);
+      response = await http.post(
+        Uri.encodeFull(V2_LOGIN_URI),
+        headers: {"Accept": "application/json;odata=verbose"},
+        body: body,
+      );
     }
 
     if (response != null &&
@@ -130,6 +137,56 @@ class FlutterAAD {
         onError(response?.body);
       }
       return null;
+    }
+  }
+
+  /// Call out to OAuth2 and get the full map token and response back given an
+  /// authentication code or null if the call isn't successful. This will also
+  /// call the passed onError with the body of the error response.
+  Future<AADResponse> GetTokenResponseWithAuthCode(
+    String authCode, {
+    void onError(String msg),
+  }) async {
+    var body = {
+      "grant_type": "authorization_code",
+      "client_id": config.clientID,
+      "code": authCode,
+      "redirect_uri": config.redirectURI,
+    };
+    switch (config.apiVersion) {
+      case 1:
+        body["resource"] = config.resource;
+        break;
+      case 2:
+        body["scope"] = config.Scope.join(' ');
+        break;
+    }
+    base_http.Response response;
+    if (config.apiVersion == 1) {
+      response = await http.post(
+        Uri.encodeFull(LOGIN_URI),
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: body,
+      );
+    } else {
+      response = await http.post(
+        Uri.encodeFull(V2_LOGIN_URI),
+        headers: {"Accept": "application/json;odata=verbose"},
+        body: body,
+      );
+    }
+
+    if (response != null &&
+        response.statusCode >= 200 &&
+        response.statusCode < 400) {
+      _fullToken = json.decode(response.body);
+      _tokenIn.add(this.loggedIn);
+      return AADResponse(response, false, _fullToken);
+    } else {
+      if (onError != null) {
+        onError(response?.body);
+      }
+      return AADResponse(response, false, null);
     }
   }
 
