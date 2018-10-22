@@ -1,3 +1,7 @@
+## [0.2.9] - 20181022
+
+* fixed some params for search
+
 ## [0.2.8] - 20181009
 
 * move back to 0.11.0 for http since that's what beta channel is on

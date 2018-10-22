@@ -588,23 +588,23 @@ class FlutterAAD {
 
     url += "?querytext='" + (query ?? "*") + "'";
     if (select != null && select.length > 0) {
-      url += "&\$selectproperties='" + select.join(",") + "'";
+      url += "&selectproperties='" + select.join(",") + "'";
     }
 
     if (orderby != null && orderby.length > 0) {
-      url += "&\$sortlist='$orderby'";
+      url += "&sortlist='$orderby'";
     }
 
     if (sourceid != null && sourceid.length > 0) {
-      url += "&\$sourceid='$sourceid'";
+      url += "&sourceid='$sourceid'";
     }
 
     if (rowlimit != null && rowlimit > 0) {
-      url += "&\$rowlimit=$rowlimit";
+      url += "&rowlimit=$rowlimit";
     }
 
     if (startrow != null && startrow > 0) {
-      url += "&\$startrow=$startrow";
+      url += "&startrow=$startrow";
     }
 
     var response = await http.get(url, headers: {
@@ -673,23 +673,23 @@ class FlutterAAD {
 
     url += "?querytext='" + (query ?? "*") + "'";
     if (select != null && select.length > 0) {
-      url += "&\$selectproperties='" + select.join(",") + "'";
+      url += "&selectproperties='" + select.join(",") + "'";
     }
 
     if (orderby != null && orderby.length > 0) {
-      url += "&\$sortlist='$orderby'";
+      url += "&sortlist='$orderby'";
     }
 
     if (sourceid != null && sourceid.length > 0) {
-      url += "&\$sourceid='$sourceid'";
+      url += "&sourceid='$sourceid'";
     }
 
     if (rowlimit != null && rowlimit > 0) {
-      url += "&\$rowlimit=$rowlimit";
+      url += "&rowlimit=$rowlimit";
     }
 
     if (startrow != null && startrow > 0) {
-      url += "&\$startrow=$startrow";
+      url += "&startrow=$startrow";
     }
 
     return await http.get(url, headers: {
