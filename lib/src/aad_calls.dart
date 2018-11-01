@@ -80,7 +80,7 @@ class FlutterAAD {
         "</soap:Envelope>";
     print(soapEnv);
 
-    final url = "http://$host/_vti_bin/authentication.asmx";
+    final url = "$host/_vti_bin/authentication.asmx";
     var response = await http.post(url,
         headers: {
           "Content-Type": "text/xml; charset=utf-8",

@@ -1,3 +1,8 @@
+## [0.3.1] - 20181101
+
+* host for FBAlogin should include protocol now
+* (still testing if this is stable)
+
 ## [0.3.0] - 20181031
 
 * lots of spooky changes! (Suggest not touching this version until I have it evened out... sorry)
