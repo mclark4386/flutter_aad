@@ -1,3 +1,7 @@
+## [0.3.2] - 20181101
+
+* now keeping track of the host for you!
+
 ## [0.3.1] - 20181101
 
 * host for FBAlogin should include protocol now

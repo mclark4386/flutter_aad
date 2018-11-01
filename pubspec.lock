@@ -15,6 +15,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.5.0"
+  asn1lib:
+    dependency: transitive
+    description:
+      name: asn1lib
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.3"
   async:
     dependency: transitive
     description:
@@ -50,6 +57,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.2"
+  corsac_jwt:
+    dependency: "direct main"
+    description:
+      name: corsac_jwt
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.2"
   coverage:
     dependency: transitive
     description:

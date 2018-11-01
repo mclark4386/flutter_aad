@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:corsac_jwt/corsac_jwt.dart';
 import 'package:http/http.dart' as base_http;
 
 import 'aad_classes.dart';
@@ -22,6 +23,31 @@ class FlutterAAD {
 
   String _fedAuthToken;
   String get fedAuthToken => _fedAuthToken;
+
+  String _host;
+  String get host {
+    if (payload != null && payload.containsKey("aud")) {
+      return payload["aud"];
+    } else {
+      return _host;
+    }
+  }
+
+  JWT get jwt {
+    if (currentToken != null && currentToken != "") {
+      return new JWT.parse(currentToken);
+    } else {
+      return null;
+    }
+  }
+
+  Map<String, dynamic> get payload {
+    if (currentToken != null && currentToken != "") {
+      return new JWT.parse(currentToken).claims;
+    } else {
+      return null;
+    }
+  }
 
   Map<String, String> get currentHeaders {
     if (fullToken != null) {
@@ -99,6 +125,8 @@ class FlutterAAD {
           .split(";")
           .firstWhere((item) => item.startsWith("FedAuth"))
           .replaceAll("FedAuth=", "");
+
+      this._host = host;
 
       this._fedAuthToken = raw_auth;
       this._tokenIn.add(true);
