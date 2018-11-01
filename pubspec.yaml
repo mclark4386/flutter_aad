@@ -1,6 +1,6 @@
 name: flutter_aad
 description: A Dart package for interacting with the Azure Active Directiory platform (v1 and v2) and Sharepoint.
-version: 0.3.2
+version: 0.3.3
 author: Matthew Clark <mclark4386@gmail.com>
 homepage: https://github.com/mclark4386/flutter_aad
 
