@@ -1,3 +1,7 @@
+## [0.3.3] - 20181101
+
+* helps if logggedIn works with fedAuth as well
+
 ## [0.3.2] - 20181101
 
 * now keeping track of the host for you!

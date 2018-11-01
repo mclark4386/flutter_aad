@@ -17,9 +17,10 @@ class FlutterAAD {
   Map<String, dynamic> _fullToken;
   Map<String, dynamic> get fullToken =>
       _fullToken == null ? null : Map.from(_fullToken);
-  bool get loggedIn => (_fullToken != null &&
-      _fullToken["access_token"] != null &&
-      _fullToken["access_token"] != "");
+  bool get loggedIn => ((_fullToken != null &&
+          _fullToken["access_token"] != null &&
+          _fullToken["access_token"] != "") ||
+      (_fedAuthToken != null && _fedAuthToken != ""));
 
   String _fedAuthToken;
   String get fedAuthToken => _fedAuthToken;
