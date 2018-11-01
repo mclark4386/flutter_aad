@@ -1,3 +1,8 @@
+## [0.3.0] - 20181031
+
+* lots of spooky changes! (Suggest not touching this version until I have it evened out... sorry)
+* major changes to how auth is handled so that we can also (hopefully) handle "on site" Form Based Authentications
+
 ## [0.2.9] - 20181022
 
 * fixed some params for search

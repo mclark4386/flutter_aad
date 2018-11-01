@@ -275,15 +275,20 @@ void main() {
         null);
     expect(aad_logged_out.fullToken, null);
     expect(
-        (await aad_logged_out.GetListItems("https://test.site", "Title",
-            token: "token", onError: (msg) {
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': 'bad_token',
+        }))
+            .GetListItems("https://test.site", "Title", onError: (msg) {
           expect(msg, "No refresh token passed and saved full token is empty.");
         })),
         null);
     expect(aad_logged_out.fullToken, null);
     expect(
-        (await aad_logged_out.GetListItems("https://test.site", "Title",
-            token: "bad_token", refresh_token: "bad_token", onError: (msg) {
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': 'bad_token',
+        }))
+            .GetListItems("https://test.site", "Title",
+                refresh_token: "bad_token", onError: (msg) {
           expect(msg, "Bad JWT. The token is expired.");
         })),
         null);
@@ -297,14 +302,17 @@ void main() {
     expect(aad_logged_out.fullToken, null);
     expect(
         (await aad_logged_out.GetListItemsResponse("https://test.site", "Title",
-            token: "token", onError: (msg) {
+            onError: (msg) {
           expect(msg, "No refresh token passed and saved full token is empty.");
         })),
         null);
     expect(aad_logged_out.fullToken, null);
     expect(
-        (await aad_logged_out.GetListItemsResponse("https://test.site", "Title",
-                token: "bad_token", refresh_token: "bad_token", onError: (msg) {
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': 'bad_token',
+        }))
+                .GetListItemsResponse("https://test.site", "Title",
+                    refresh_token: "bad_token", onError: (msg) {
           expect(msg, "Bad JWT. The token is expired.");
         }))
             .response
@@ -339,9 +347,7 @@ void main() {
         'good-token-yay');
     expect(
         (await aad.GetListItems("https://test.site", "Title",
-                token: "token",
-                refresh_token: "refresh_token",
-                orderby: "Created%20desc"))
+                refresh_token: "refresh_token", orderby: "Created%20desc"))
             .map['access_token'],
         'good-token-yay');
     expect(
@@ -357,8 +363,12 @@ void main() {
         'good-token-yay');
 
     expect(
-        (await aad.GetListItems("https://test.site", "Bad Title",
-            token: "bad_token", refresh_token: "bad_token")),
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': 'bad_token',
+          'refresh_token': 'refresh_token',
+        }))
+            .GetListItems("https://test.site", "Bad Title",
+                refresh_token: "bad_token")),
         null);
 
     expect(
@@ -391,8 +401,11 @@ void main() {
         200);
 
     expect(
-        (await aad.GetListItemsResponse("https://test.site", "Bad Title",
-                token: "bad_token", refresh_token: "bad_token"))
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': 'bad_token',
+        }))
+                .GetListItemsResponse("https://test.site", "Bad Title",
+                    refresh_token: "bad_token"))
             .response
             .statusCode,
         401);
@@ -417,8 +430,7 @@ void main() {
         null);
     expect(
         (await aad_logged_out.GetListItemsWORefresh(
-            "https://test.site", "Title",
-            token: "bad_token", onError: (msg) {
+            "https://test.site", "Title", onError: (msg) {
           expect(msg, "bad client id");
         })),
         null);
@@ -439,7 +451,7 @@ void main() {
         'good-token-yay');
     expect(
         (await aad.GetListItemsWORefresh("https://test.site", "Title",
-            token: "token", orderby: "Created%20desc"))['access_token'],
+            orderby: "Created%20desc"))['access_token'],
         'good-token-yay');
     expect(
         (await aad.GetListItemsWORefresh("https://test.site", "Title",
@@ -452,8 +464,11 @@ void main() {
         'good-token-yay');
 
     expect(
-        (await aad.GetListItemsWORefresh("https://test.site", "Bad Title",
-            token: "bad_token")),
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': 'bad_token',
+          'refresh_token': 'refresh_token',
+        }))
+            .GetListItemsWORefresh("https://test.site", "Bad Title")),
         null);
 
     expect(
@@ -484,16 +499,22 @@ void main() {
         200);
 
     expect(
-        (await aad.GetListItemsResponseWORefresh(
-                "https://test.site", "Bad Title",
-                token: "bad_token"))
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': 'bad_token',
+          'refresh_token': 'refresh_token',
+        }))
+                .GetListItemsResponseWORefresh(
+                    "https://test.site", "Bad Title"))
             .statusCode,
         401);
 
     expect(
-        (await aad.GetListItemsResponseWORefresh(
-                "https://test.site", "Bad Title",
-                token: "2_bad_token"))
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': '2_bad_token',
+          'refresh_token': 'refresh_token',
+        }))
+                .GetListItemsResponseWORefresh(
+                    "https://test.site", "Bad Title"))
             .statusCode,
         401);
   });
@@ -526,7 +547,6 @@ void main() {
         'good-token-yay');
     expect(
         (await aad.GetMyProfile(
-            token: "token",
             select: ["ID", "Title", "Body", "Image", "Created", "Expires"],
             orderby: "Created%20desc",
             filter: [
@@ -536,11 +556,13 @@ void main() {
         'good-token-yay');
 
     expect(
-        (await aad.GetMyProfile(
-            token: "bad_token",
-            onError: (msg) {
-              expect(msg, "Bad JWT. The token is expired.");
-            })),
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': 'bad_token',
+          'refresh_token': 'refresh_token',
+        }))
+            .GetMyProfile(onError: (msg) {
+          expect(msg, "Bad JWT. The token is expired.");
+        })),
         null);
 
     expect(
@@ -555,7 +577,13 @@ void main() {
         200);
 
     expect(
-        (await aad.GetMyProfileResponse(token: "bad_token")).statusCode, 401);
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': 'bad_token',
+          'refresh_token': 'refresh_token',
+        }))
+                .GetMyProfileResponse())
+            .statusCode,
+        401);
   });
 
   test('get sharepoint search', () async {
@@ -591,16 +619,24 @@ void main() {
     // null response with token but no refresh token
     expect(
         (await aad_logged_out.GetSharepointSearchResponse("https://test.site",
-            token: "token", onError: (msg) {
-          expect(msg, "No refresh token passed and saved full token is empty.");
+            onError: (msg) {
+          expect(msg, "No access token passed and saved full token is empty.");
         })),
         null);
     expect(aad_logged_out.fullToken, null);
 
     // 401 response with bad tokens
     expect(
-        (await aad_logged_out.GetSharepointSearchResponse("https://test.site",
-                token: "bad_token", refresh_token: "bad_token", onError: (msg) {
+        (await (FlutterAAD(
+          config,
+          http: client,
+          fullToken: {
+            'access_token': 'bad_token',
+            'refresh_token': 'refresh_token',
+          },
+        ))
+                .GetSharepointSearchResponse("https://test.site",
+                    refresh_token: "bad_token", onError: (msg) {
           expect(msg, "Bad JWT. The token is expired.");
         }))
             .response
@@ -653,8 +689,12 @@ void main() {
 
     // 401 with bad tokens overriding saved tokens
     expect(
-        (await aad.GetSharepointSearchResponse("https://test.site",
-                token: "bad_token", refresh_token: "bad_token"))
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': 'bad_token',
+          'refresh_token': 'refresh_token',
+        }))
+                .GetSharepointSearchResponse("https://test.site",
+                    refresh_token: "bad_token"))
             .response
             .statusCode,
         401);
@@ -702,14 +742,20 @@ void main() {
         200);
 
     expect(
-        (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
-                token: "bad_token"))
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': 'bad_token',
+          'refresh_token': 'refresh_token',
+        }))
+                .GetSharepointSearchResponseWORefresh("https://test.site"))
             .statusCode,
         401);
 
     expect(
-        (await aad.GetSharepointSearchResponseWORefresh("https://test.site",
-                token: "2_bad_token"))
+        (await (FlutterAAD(config, http: client, fullToken: {
+          'access_token': '2_bad_token',
+          'refresh_token': 'refresh_token',
+        }))
+                .GetSharepointSearchResponseWORefresh("https://test.site"))
             .statusCode,
         401);
   });

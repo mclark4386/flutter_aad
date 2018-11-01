@@ -20,6 +20,22 @@ class FlutterAAD {
       _fullToken["access_token"] != null &&
       _fullToken["access_token"] != "");
 
+  String _fedAuthToken;
+  String get fedAuthToken => _fedAuthToken;
+
+  Map<String, String> get currentHeaders {
+    if (fullToken != null) {
+      return {
+        "Authorization": "Bearer ${this.currentToken}",
+      };
+    } else if (fedAuthToken != null && fedAuthToken != "") {
+      return {
+        "Cookie": "FedAuth=${fedAuthToken}",
+      };
+    }
+    return {};
+  }
+
   String get currentToken {
     if (_fullToken != null && _fullToken["access_token"] != null) {
       return _fullToken["access_token"];
@@ -38,13 +54,56 @@ class FlutterAAD {
   AADConfig get config => _config;
 
   FlutterAAD(this._config,
-      {base_http.BaseClient http, Map<String, dynamic> fullToken})
+      {base_http.BaseClient http,
+      Map<String, dynamic> fullToken,
+      String fedAuthToken})
       : this.http = http ?? new base_http.Client(),
-        this._fullToken = fullToken;
+        this._fullToken = fullToken,
+        this._fedAuthToken = fedAuthToken;
 
   void Logout() {
     this._fullToken = null;
+    this._fedAuthToken = '';
     this._tokenIn.add(false);
+  }
+
+  /// Tries to Login to "on-site" Form Based Authentication
+  Future<base_http.Response> FBALogin(host, user, password) async {
+    final soapEnv = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+        "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
+        "<soap:Body>" +
+        "<Login xmlns=\"http://schemas.microsoft.com/sharepoint/soap/\">" +
+        "<username>$user</username>" +
+        "<password>$password</password>" +
+        "</Login>" +
+        "</soap:Body>" +
+        "</soap:Envelope>";
+    print(soapEnv);
+
+    final url = "http://$host/_vti_bin/authentication.asmx";
+    var response = await http.post(url,
+        headers: {
+          "Content-Type": "text/xml; charset=utf-8",
+          "SOAPAction": "http://schemas.microsoft.com/sharepoint/soap/Login",
+        },
+        body: soapEnv);
+
+    print(
+        "[${response.statusCode}](${response.contentLength})${response.body}\n");
+    print("header:${response.headers}\n");
+
+    if (response.statusCode == 200) {
+      var cookie = response.headers["set-cookie"];
+      print(cookie);
+      String raw_auth = cookie
+          .split(";")
+          .firstWhere((item) => item.startsWith("FedAuth"))
+          .replaceAll("FedAuth=", "");
+
+      this._fedAuthToken = raw_auth;
+      this._tokenIn.add(true);
+    }
+    return response;
   }
 
   /// Generates the OAuth2 URI to be used for a webview to renderer to be able to send
@@ -239,26 +298,22 @@ class FlutterAAD {
   /// the Map<String, dynamic> that is returned if successful. This will also
   /// call the passed onError with the body of the error response.
   Future<AADMap> GetListItems(String site, String title,
-      {String token,
-      String refresh_token,
+      {String refresh_token,
       List<String> select,
       String orderby,
       List<String> expand,
       List<String> filter,
       void onError(String msg)}) async {
-    var tok = token;
-    if (tok == null || tok == "") {
-      tok = this.currentToken;
-      if (tok == "") {
-        if (onError != null) {
-          onError("No access token passed and saved full token is empty.");
-        }
-        return null;
+    if (currentHeaders.keys.length == 0) {
+      if (onError != null) {
+        onError("No access token passed and saved full token is empty.");
       }
+      return null;
     }
 
     var rtoken = refresh_token;
-    if (rtoken == null || rtoken == "") {
+    if ((rtoken == null || rtoken == "") &&
+        currentHeaders.containsKey("Authorization")) {
       rtoken = this.currentRefreshToken;
       if (rtoken == "") {
         if (onError != null) {
@@ -269,7 +324,6 @@ class FlutterAAD {
     }
 
     var response = await this.GetListItemsResponse(site, title,
-        token: tok,
         refresh_token: rtoken,
         select: select,
         orderby: orderby,
@@ -292,29 +346,17 @@ class FlutterAAD {
   /// call the passed onError with the body of the error response.
   /// DOES NOT TRY TO REFRESH TOKEN FOR YOU!
   Future<Map<String, dynamic>> GetListItemsWORefresh(String site, String title,
-      {String token,
-      List<String> select,
+      {List<String> select,
       String orderby,
       List<String> filter,
       List<String> expand,
       void onError(String msg)}) async {
-    var tok = token;
-    if (tok == null || tok == "") {
-      tok = this.currentToken;
-      if (tok == "") {
-        if (onError != null) {
-          onError("No access token passed and saved full token is empty.");
-        }
-        return null;
-      }
+    if (this.currentHeaders.keys.length == 0) {
+      return null;
     }
 
     var response = await this.GetListItemsResponseWORefresh(site, title,
-        token: tok,
-        select: select,
-        orderby: orderby,
-        filter: filter,
-        expand: expand);
+        select: select, orderby: orderby, filter: filter, expand: expand);
     if (response != null &&
         response.statusCode >= 200 &&
         response.statusCode < 400) {
@@ -326,26 +368,19 @@ class FlutterAAD {
 
   /// Call out for List items by Title and return the response it gets back.
   Future<AADResponse> GetListItemsResponse(String site, String title,
-      {String token,
-      String refresh_token,
+      {String refresh_token,
       List<String> select,
       String orderby,
       List<String> filter,
       List<String> expand,
       void onError(String msg)}) async {
-    var tok = token;
-    if (tok == null || tok == "") {
-      tok = this.currentToken;
-      if (tok == "") {
-        if (onError != null) {
-          onError("No access token passed and saved full token is empty.");
-        }
-        return null;
-      }
+    if (this.currentHeaders.keys.length == 0) {
+      return null;
     }
 
     var rtoken = refresh_token;
-    if (rtoken == null || rtoken == "") {
+    if ((rtoken == null || rtoken == "") &&
+        (this.currentHeaders.containsKey("Authorization"))) {
       rtoken = this.currentRefreshToken;
       if (rtoken == "") {
         if (onError != null) {
@@ -394,15 +429,16 @@ class FlutterAAD {
       }
     }
 
-    var response = await http.get(url, headers: {
-      "Accept": "application/json;odata=verbose",
-      "Authorization": "Bearer $tok"
-    });
+    var headers = currentHeaders;
+    headers["Accept"] = "application/json;odata=verbose";
+
+    var response = await http.get(url, headers: headers);
 
     // handle refresh
     Map<String, dynamic> full_token;
     if (response.statusCode == 401 &&
-        response.body.contains("The token is expired")) {
+        response.body.contains("The token is expired") &&
+        this.currentHeaders.containsKey("Authorization")) {
       //statusCode:401
       //body: {"error_description":"Invalid JWT token. The token is expired."}
       for (int i = 0; i < config.refreshTries; i++) {
@@ -434,17 +470,12 @@ class FlutterAAD {
   /// DOES NOT TRY TO REFRESH TOKEN FOR YOU!
   Future<base_http.Response> GetListItemsResponseWORefresh(
       String site, String title,
-      {String token,
-      List<String> select,
+      {List<String> select,
       String orderby,
       List<String> filter,
       List<String> expand}) async {
-    var tok = token;
-    if (tok == null || tok == "") {
-      tok = this.currentToken;
-      if (tok == "") {
-        return null;
-      }
+    if (this.currentHeaders.keys.length == 0) {
+      return null;
     }
 
     var url = site;
@@ -486,57 +517,45 @@ class FlutterAAD {
       }
     }
 
-    return await http.get(url, headers: {
-      "Accept": "application/json;odata=verbose",
-      "Authorization": "Bearer $tok"
-    });
+    var headers = currentHeaders;
+    headers["Accept"] = "application/json;odata=verbose";
+
+    return await http.get(url, headers: headers);
   }
 
   /// Call out for the logged in user's profile and return the response it gets
   /// back. This will also call the passed onError with the body of the error
   /// response.
   Future<base_http.Response> GetMyProfileResponse(
-      {String token,
-      List<String> select,
-      String orderby,
-      List<String> filter}) async {
+      {List<String> select, String orderby, List<String> filter}) async {
     var url = GRAPH_URI + "/me";
-    var tok = token;
-    if (tok == null || tok == "") {
-      tok = this.currentToken;
-      if (tok == "") {
-        return null;
-      }
+    if (currentHeaders.keys.length == 0) {
+      return null;
     }
 
-    return await http.get(url, headers: {
-      "Accept": "application/json;odata=verbose",
-      "Authorization": "Bearer $tok"
-    });
+    var headers = currentHeaders;
+    headers["Accept"] = "application/json;odata=verbose";
+
+    return await http.get(url, headers: headers);
   }
 
   /// Call out for the logged in user's profile and return null when not
   /// successful and the Map<String, dynamic> that is returned if successful.
   /// This will also call the passed onError with the body of the error response.
   Future<Map<String, dynamic>> GetMyProfile(
-      {String token,
-      List<String> select,
+      {List<String> select,
       String orderby,
       List<String> filter,
       void onError(String msg)}) async {
-    var tok = token;
-    if (tok == null || tok == "") {
-      tok = this.currentToken;
-      if (tok == "") {
-        if (onError != null) {
-          onError("No access token passed and saved full token is empty.");
-        }
-        return null;
+    if (currentHeaders.keys.length == 0) {
+      if (onError != null) {
+        onError("No access token passed and saved full token is empty.");
       }
+      return null;
     }
 
-    var response = await this.GetMyProfileResponse(
-        token: tok, select: select, orderby: orderby, filter: filter);
+    var response = await this
+        .GetMyProfileResponse(select: select, orderby: orderby, filter: filter);
     if (response.statusCode >= 200 && response.statusCode < 400) {
       return json.decode(response.body);
     } else {
@@ -549,8 +568,7 @@ class FlutterAAD {
 
   /// Call out for a general query to the site
   Future<AADResponse> GetSharepointSearchResponse(String site,
-      {String token,
-      String query,
+      {String query,
       String refresh_token,
       List<String> select,
       String orderby,
@@ -558,19 +576,16 @@ class FlutterAAD {
       int rowlimit,
       int startrow,
       void onError(String msg)}) async {
-    var tok = token;
-    if (tok == null || tok == "") {
-      tok = this.currentToken;
-      if (tok == "") {
-        if (onError != null) {
-          onError("No access token passed and saved full token is empty.");
-        }
-        return null;
+    if (currentHeaders.keys.length == 0) {
+      if (onError != null) {
+        onError("No access token passed and saved full token is empty.");
       }
+      return null;
     }
 
     var rtoken = refresh_token;
-    if (rtoken == null || rtoken == "") {
+    if ((rtoken == null || rtoken == "") &&
+        this.currentHeaders.containsKey("Authorization")) {
       rtoken = this.currentRefreshToken;
       if (rtoken == "") {
         if (onError != null) {
@@ -607,13 +622,14 @@ class FlutterAAD {
       url += "&startrow=$startrow";
     }
 
-    var response = await http.get(url, headers: {
-      "Accept": "application/json;odata=verbose",
-      "Authorization": "Bearer $tok"
-    });
+    var headers = currentHeaders;
+    headers["Accept"] = "application/json;odata=verbose";
+
+    var response = await http.get(url, headers: headers);
 
     Map<String, dynamic> full_token;
-    if (response.statusCode == 401) {
+    if (response.statusCode == 401 &&
+        this.currentHeaders.containsKey("Authorization")) {
       //statusCode:401
       //body: {"error_description":"Invalid JWT token. The token is expired."}
       for (int i = 0; i < config.refreshTries; i++) {
@@ -649,7 +665,6 @@ class FlutterAAD {
   /// DOES NOT TRY TO REFRESH TOKEN FOR YOU
   Future<base_http.Response> GetSharepointSearchResponseWORefresh(
     String site, {
-    String token,
     String query,
     List<String> select,
     String orderby,
@@ -657,12 +672,8 @@ class FlutterAAD {
     int rowlimit,
     int startrow,
   }) async {
-    var tok = token;
-    if (tok == null || tok == "") {
-      tok = this.currentToken;
-      if (tok == "") {
-        return null;
-      }
+    if (currentHeaders.keys.length == 0) {
+      return null;
     }
 
     var url = site;
@@ -692,9 +703,9 @@ class FlutterAAD {
       url += "&startrow=$startrow";
     }
 
-    return await http.get(url, headers: {
-      "Accept": "application/json;odata=verbose",
-      "Authorization": "Bearer $tok"
-    });
+    var headers = currentHeaders;
+    headers["Accept"] = "application/json;odata=verbose";
+
+    return await http.get(url, headers: headers);
   }
 }
