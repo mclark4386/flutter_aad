@@ -1,3 +1,7 @@
+## [0.3.4] - 20181106
+
+* moved to http 0.12.0
+
 ## [0.3.3] - 20181101
 
 * helps if logggedIn works with fedAuth as well
