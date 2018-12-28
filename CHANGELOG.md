@@ -1,3 +1,7 @@
+## [0.3.5] - 20181228
+
+* adding refresh overrides for adding access to tokens
+
 ## [0.3.4] - 20181106
 
 * moved to http 0.12.0
