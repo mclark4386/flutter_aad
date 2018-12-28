@@ -282,7 +282,13 @@ class FlutterAAD {
   /// null if the call isn't successful. This will also call the passed
   /// onError with the body of the error response.
   Future<Map<String, dynamic>> RefreshTokenMap(
-      {String refreshToken, void onError(String msg)}) async {
+      {
+        String refreshToken, 
+        void onError(String msg),
+        String clientID,
+        String resource,
+        String redirectURI,
+      }) async {
     var rtoken = refreshToken;
     if (rtoken == null || rtoken == "") {
       rtoken = this.currentRefreshToken;
@@ -295,16 +301,16 @@ class FlutterAAD {
     }
     var body = {
       "grant_type": "refresh_token",
-      "client_id": config.clientID,
+      "client_id": clientID ?? config.clientID,
       "refresh_token": rtoken,
     };
 
     var login_url = LOGIN_URI;
     if (config.apiVersion == 1) {
-      body["resource"] = config.resource;
+      body["resource"] = resource ?? config.resource;
     } else {
       body["scope"] = config.Scope.join(' ');
-      body["redirect_uri"] = config.redirectURI;
+      body["redirect_uri"] = redirectURI ?? config.redirectURI;
       login_url = V2_LOGIN_URI;
     }
 
