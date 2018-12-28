@@ -281,14 +281,13 @@ class FlutterAAD {
   /// Call out to OAuth2 and get the full map token back given a refresh token or
   /// null if the call isn't successful. This will also call the passed
   /// onError with the body of the error response.
-  Future<Map<String, dynamic>> RefreshTokenMap(
-      {
-        String refreshToken, 
-        void onError(String msg),
-        String clientID,
-        String resource,
-        String redirectURI,
-      }) async {
+  Future<Map<String, dynamic>> RefreshTokenMap({
+    String refreshToken,
+    void onError(String msg),
+    String clientID,
+    String resource,
+    String redirectURI,
+  }) async {
     var rtoken = refreshToken;
     if (rtoken == null || rtoken == "") {
       rtoken = this.currentRefreshToken;
