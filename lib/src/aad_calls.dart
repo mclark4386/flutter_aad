@@ -331,11 +331,12 @@ class FlutterAAD {
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: body);
     if (response.statusCode >= 200 && response.statusCode < 400) {
-      _fullToken = json.decode(response.body);
+      var token = json.decode(response.body);
       if (!onlyOutput) {
         _tokenIn.add(this.loggedIn);
+        _fullToken = token;
       }
-      return _fullToken;
+      return token;
     } else {
       if (onError != null) {
         onError(response.body);
