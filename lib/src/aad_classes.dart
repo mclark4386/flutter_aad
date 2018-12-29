@@ -2,12 +2,12 @@ import 'package:http/http.dart' as base_http;
 import 'package:meta/meta.dart';
 
 class AADConfig {
-  final String clientID;
-  final String redirectURI;
+  String clientID;
+  String redirectURI;
   final List<String> scope;
-  final String resource;
-  final int refreshTries;
-  final int apiVersion;
+  String resource;
+  int refreshTries;
+  int apiVersion;
 
   AADConfig({
     this.resource,
@@ -17,6 +17,14 @@ class AADConfig {
     this.refreshTries = 3,
     this.apiVersion = 1,
   }) : this.scope = scope ?? [];
+
+  AADConfig.clone(AADConfig config)
+      : resource = config.resource,
+        clientID = config.clientID,
+        redirectURI = config.redirectURI,
+        scope = List.from(config.scope),
+        refreshTries = config.refreshTries,
+        apiVersion = config.apiVersion;
 
   List<String> get Scope => List.from(scope);
 }

@@ -1,3 +1,7 @@
+## [0.3.8] - 20181229
+
+* can now clone configs
+
 ## [0.3.7] - 20181228
 
 * fixed bug onlyOutput path

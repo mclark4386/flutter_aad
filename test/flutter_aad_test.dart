@@ -47,14 +47,8 @@ void main() {
 
   var config =
       AADConfig(clientID: "client", redirectURI: "theplace", resource: "thing");
-  var configWScope = AADConfig(
-    clientID: "client",
-    redirectURI: "theplace",
-    resource: "thing",
-    scope: ["first", "second"],
-  );
-  var badConfig = AADConfig(
-      clientID: "bad_client", redirectURI: "theplace", resource: "thing");
+  var configWScope = AADConfig.clone(config)..scope.addAll(["first", "second"]);
+  var badConfig = AADConfig.clone(config)..clientID = "bad_client";
 //  var badConfigWScope = AADConfig(
 //    clientID: "bad_client",
 //    redirectURI: "theplace",
@@ -62,19 +56,8 @@ void main() {
 //    scope: ["first", "second"],
 //  );
 
-  var configV2 = AADConfig(
-    clientID: "client",
-    redirectURI: "theplace",
-    resource: "thing",
-    apiVersion: 2,
-  );
-  var configWScopeV2 = AADConfig(
-    clientID: "client",
-    redirectURI: "theplace",
-    resource: "thing",
-    scope: ["first", "second"],
-    apiVersion: 2,
-  );
+  var configV2 = AADConfig.clone(config)..apiVersion = 2;
+  var configWScopeV2 = AADConfig.clone(configWScope)..apiVersion = 2;
   var badConfigV2 = AADConfig(
     clientID: "bad_client",
     redirectURI: "theplace",
