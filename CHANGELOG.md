@@ -1,3 +1,7 @@
+## [0.3.7] - 20181228
+
+* fixed bug onlyOutput path
+
 ## [0.3.6] - 20181228
 
 * added ability to only output and not update internal token
