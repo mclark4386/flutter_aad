@@ -50,6 +50,19 @@ class FlutterAAD {
     }
   }
 
+  Map<String, String> headersWithToken(String token, {bool FBA = false}) {
+    if (!FBA && token != null && token != "") {
+      return {
+        "Authorization": "Bearer $token",
+      };
+    } else if (token != null && token != "") {
+      return {
+        "Cookie": "FedAuth=$token",
+      };
+    }
+    return {};
+  }
+
   Map<String, String> get currentHeaders {
     if (fullToken != null) {
       return {
@@ -287,6 +300,7 @@ class FlutterAAD {
     String clientID,
     String resource,
     String redirectURI,
+    bool onlyOutput = false,
   }) async {
     var rtoken = refreshToken;
     if (rtoken == null || rtoken == "") {
@@ -318,7 +332,9 @@ class FlutterAAD {
         body: body);
     if (response.statusCode >= 200 && response.statusCode < 400) {
       _fullToken = json.decode(response.body);
-      _tokenIn.add(this.loggedIn);
+      if (!onlyOutput) {
+        _tokenIn.add(this.loggedIn);
+      }
       return _fullToken;
     } else {
       if (onError != null) {
