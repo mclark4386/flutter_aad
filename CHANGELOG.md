@@ -1,3 +1,12 @@
+## [0.3.6] - 20181228
+
+* added ability to only output and not update internal token
+* added ability to make a token_header with given token
+
+## [0.3.5] - 20181228
+
+* adding refresh overrides for adding access to tokens
+
 ## [0.3.4] - 20181106
 
 * moved to http 0.12.0

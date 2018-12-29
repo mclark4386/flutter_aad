@@ -50,6 +50,19 @@ class FlutterAAD {
     }
   }
 
+  Map<String, String> headersWithToken(String token, {bool FBA = false}) {
+    if (!FBA && token != null && token != "") {
+      return {
+        "Authorization": "Bearer $token",
+      };
+    } else if (token != null && token != "") {
+      return {
+        "Cookie": "FedAuth=$token",
+      };
+    }
+    return {};
+  }
+
   Map<String, String> get currentHeaders {
     if (fullToken != null) {
       return {
@@ -281,8 +294,14 @@ class FlutterAAD {
   /// Call out to OAuth2 and get the full map token back given a refresh token or
   /// null if the call isn't successful. This will also call the passed
   /// onError with the body of the error response.
-  Future<Map<String, dynamic>> RefreshTokenMap(
-      {String refreshToken, void onError(String msg)}) async {
+  Future<Map<String, dynamic>> RefreshTokenMap({
+    String refreshToken,
+    void onError(String msg),
+    String clientID,
+    String resource,
+    String redirectURI,
+    bool onlyOutput = false,
+  }) async {
     var rtoken = refreshToken;
     if (rtoken == null || rtoken == "") {
       rtoken = this.currentRefreshToken;
@@ -295,16 +314,16 @@ class FlutterAAD {
     }
     var body = {
       "grant_type": "refresh_token",
-      "client_id": config.clientID,
+      "client_id": clientID ?? config.clientID,
       "refresh_token": rtoken,
     };
 
     var login_url = LOGIN_URI;
     if (config.apiVersion == 1) {
-      body["resource"] = config.resource;
+      body["resource"] = resource ?? config.resource;
     } else {
       body["scope"] = config.Scope.join(' ');
-      body["redirect_uri"] = config.redirectURI;
+      body["redirect_uri"] = redirectURI ?? config.redirectURI;
       login_url = V2_LOGIN_URI;
     }
 
@@ -313,7 +332,9 @@ class FlutterAAD {
         body: body);
     if (response.statusCode >= 200 && response.statusCode < 400) {
       _fullToken = json.decode(response.body);
-      _tokenIn.add(this.loggedIn);
+      if (!onlyOutput) {
+        _tokenIn.add(this.loggedIn);
+      }
       return _fullToken;
     } else {
       if (onError != null) {

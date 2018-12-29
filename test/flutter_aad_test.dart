@@ -101,6 +101,13 @@ void main() {
     expect(aad.loggedIn, true);
     expect(aad.currentToken, "good-token-yay");
     expect(aad.currentRefreshToken, "good-token-yay");
+
+    expect(aad.headersWithToken("test"), {
+      "Authorization": "Bearer test",
+    });
+    expect(aad.headersWithToken("test", FBA: true), {
+      "Cookie": "FedAuth=test",
+    });
   });
 
   test('generates v1 auth code uris', () async {
