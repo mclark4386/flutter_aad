@@ -1,3 +1,7 @@
+## [0.3.9] - 20190110
+
+* testing a fba refresh call back
+
 ## [0.3.8] - 20181229
 
 * can now clone configs

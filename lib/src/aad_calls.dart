@@ -25,6 +25,8 @@ class FlutterAAD {
   String _fedAuthToken;
   String get fedAuthToken => _fedAuthToken;
 
+  Function _fbaRefreshCallback;
+
   String _host;
   String get host {
     if (payload != null && payload.containsKey("aud")) {
@@ -108,7 +110,8 @@ class FlutterAAD {
   }
 
   /// Tries to Login to "on-site" Form Based Authentication
-  Future<base_http.Response> FBALogin(host, user, password) async {
+  Future<base_http.Response> FBALogin(host, user, password,
+      {Function refreshCallback}) async {
     final soapEnv = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
         "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
         "<soap:Body>" +
@@ -141,6 +144,10 @@ class FlutterAAD {
           .replaceAll("FedAuth=", "");
 
       this._host = host;
+
+      if (refreshCallback != null) {
+        this._fbaRefreshCallback = refreshCallback;
+      }
 
       this._fedAuthToken = raw_auth;
       this._tokenIn.add(true);
@@ -485,6 +492,8 @@ class FlutterAAD {
 
     var response = await http.get(url, headers: headers);
 
+    print("response[${response.statusCode}]:${response.body}");
+
     // handle refresh
     Map<String, dynamic> full_token;
     if (response.statusCode == 401 &&
@@ -494,6 +503,22 @@ class FlutterAAD {
       //body: {"error_description":"Invalid JWT token. The token is expired."}
       for (int i = 0; i < config.refreshTries; i++) {
         full_token = await this.RefreshTokenMap(refreshToken: rtoken);
+        if (full_token != null) {
+          var sub_resp = await GetListItemsResponseWORefresh(site, title,
+              select: select, orderby: orderby, filter: filter, expand: expand);
+          if (sub_resp.statusCode >= 200 && sub_resp.statusCode < 400) {
+            return AADResponse(sub_resp, true, full_token);
+          }
+        }
+      }
+      print(
+          "Failed to properly refresh token! Calling onError with original response body.");
+    } else if (response.statusCode == 401 &&
+        fedAuthToken != null &&
+        this._fbaRefreshCallback != null) {
+      //body: {"error_description":"Invalid JWT token. The token is expired."}
+      for (int i = 0; i < config.refreshTries; i++) {
+        full_token = await this._fbaRefreshCallback();
         if (full_token != null) {
           var sub_resp = await GetListItemsResponseWORefresh(site, title,
               select: select, orderby: orderby, filter: filter, expand: expand);
@@ -678,6 +703,8 @@ class FlutterAAD {
 
     var response = await http.get(url, headers: headers);
 
+    print("response[${response.statusCode}]:${response.body}");
+
     Map<String, dynamic> full_token;
     if (response.statusCode == 401 &&
         this.currentHeaders.containsKey("Authorization")) {
@@ -685,6 +712,27 @@ class FlutterAAD {
       //body: {"error_description":"Invalid JWT token. The token is expired."}
       for (int i = 0; i < config.refreshTries; i++) {
         full_token = await this.RefreshTokenMap(refreshToken: rtoken);
+        if (full_token != null) {
+          var sub_resp = await GetSharepointSearchResponseWORefresh(site,
+              select: select,
+              orderby: orderby,
+              sourceid: sourceid,
+              rowlimit: rowlimit,
+              startrow: startrow);
+          if (sub_resp.statusCode >= 200 && sub_resp.statusCode < 400) {
+            return AADResponse(sub_resp, true, full_token);
+          }
+        }
+      }
+      print(
+          "Failed to properly refresh token! Calling onError with original response body.");
+    }else if (response.statusCode == 401 &&
+        fedAuthToken != null &&
+        this._fbaRefreshCallback != null) {
+      //statusCode:401
+      //body: {"error_description":"Invalid JWT token. The token is expired."}
+      for (int i = 0; i < config.refreshTries; i++) {
+        full_token = await this._fbaRefreshCallback();
         if (full_token != null) {
           var sub_resp = await GetSharepointSearchResponseWORefresh(site,
               select: select,
