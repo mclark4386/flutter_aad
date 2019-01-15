@@ -1,3 +1,7 @@
+## [0.3.10] - 20190115
+
+* can now set host in constructor as well
+
 ## [0.3.9] - 20190110
 
 * testing a fba refresh call back

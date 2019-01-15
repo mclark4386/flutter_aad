@@ -98,10 +98,11 @@ class FlutterAAD {
   FlutterAAD(this._config,
       {base_http.BaseClient http,
       Map<String, dynamic> fullToken,
-      String fedAuthToken})
+      String fedAuthToken, String host})
       : this.http = http ?? new base_http.Client(),
         this._fullToken = fullToken,
-        this._fedAuthToken = fedAuthToken;
+        this._fedAuthToken = fedAuthToken, 
+        this._host = host ?? "";
 
   void Logout() {
     this._fullToken = null;
