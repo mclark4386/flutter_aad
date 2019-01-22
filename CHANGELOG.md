@@ -1,3 +1,7 @@
+## [0.3.13] - 20190122
+
+* remove unneeded logging
+
 ## [0.3.12] - 20190122
 
 * better error handling and some logging

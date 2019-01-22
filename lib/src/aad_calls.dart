@@ -519,7 +519,6 @@ class FlutterAAD {
         this._fbaRefreshCallback != null) {
       //body: {"error_description":"Invalid JWT token. The token is expired."}
       for (int i = 0; i < config.refreshTries; i++) {
-        print("calling fbaRefreshCallback");
         full_token = await this._fbaRefreshCallback();
         if (full_token != null) {
           var sub_resp = await GetListItemsResponseWORefresh(site, title,
@@ -532,7 +531,6 @@ class FlutterAAD {
       print(
           "Failed to properly refresh token! Calling onError with original response body.");
     }
-        print("not calling fbaRefreshCallback:${this._fbaRefreshCallback}");
     if (response.statusCode < 200 ||
         response.statusCode == 400 ||
         response.statusCode > 403 ||
@@ -737,7 +735,6 @@ class FlutterAAD {
       //statusCode:401
       //body: {"error_description":"Invalid JWT token. The token is expired."}
       for (int i = 0; i < config.refreshTries; i++) {
-        print("calling fbaRefreshCallback:${this._fbaRefreshCallback}");
         full_token = await this._fbaRefreshCallback();
         if (full_token != null) {
           var sub_resp = await GetSharepointSearchResponseWORefresh(site,
@@ -754,7 +751,6 @@ class FlutterAAD {
       print(
           "Failed to properly refresh token! Calling onError with original response body.");
     }
-    print("not calling fbaRefreshCallback:${this._fbaRefreshCallback}");
     if (response.statusCode < 200 ||
         response.statusCode == 400 ||
         response.statusCode > 403 ||
