@@ -1,3 +1,7 @@
+## [0.3.12] - 20190122
+
+* better error handling and some logging
+
 ## [0.3.11] - 20190122
 
 * added check for 403 as well as 401 for refresh on FBA
