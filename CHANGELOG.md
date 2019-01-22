@@ -1,3 +1,7 @@
+## [0.3.14] - 20190122
+
+* add cb to constructor
+
 ## [0.3.13] - 20190122
 
 * remove unneeded logging
