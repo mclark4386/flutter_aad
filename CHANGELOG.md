@@ -1,3 +1,7 @@
+## [0.3.11] - 20190122
+
+* added check for 403 as well as 401 for refresh on FBA
+
 ## [0.3.10] - 20190115
 
 * can now set host in constructor as well

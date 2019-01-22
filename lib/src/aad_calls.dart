@@ -514,7 +514,7 @@ class FlutterAAD {
       }
       print(
           "Failed to properly refresh token! Calling onError with original response body.");
-    } else if (response.statusCode == 401 &&
+    } else if ((response.statusCode == 401 || response.statusCode == 403) &&
         fedAuthToken != null &&
         this._fbaRefreshCallback != null) {
       //body: {"error_description":"Invalid JWT token. The token is expired."}
@@ -727,7 +727,7 @@ class FlutterAAD {
       }
       print(
           "Failed to properly refresh token! Calling onError with original response body.");
-    }else if (response.statusCode == 401 &&
+    }else if ((response.statusCode == 401 || response.statusCode == 403) &&
         fedAuthToken != null &&
         this._fbaRefreshCallback != null) {
       //statusCode:401
